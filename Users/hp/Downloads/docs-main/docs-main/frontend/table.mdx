@@ -1,0 +1,175 @@
+---
+title: "Dynamic Table Component"
+description: "Integrate and customize a dynamic and paginated table in your Next.js project"
+---
+
+### Dynamic Table Component
+
+<Frame>
+  <img src="/images/dynamic-table.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+#### Overview
+
+The `DynamicTable` component is a versatile and customizable table that supports pagination, search, row selection, and enhanced features such as dynamic page ranges and more user-friendly pagination controls. It is designed to handle large datasets efficiently with a dynamic data-fetching mechanism.
+
+#### Features
+
+- **Searchable Columns**: Each column includes a search field for filtering data.
+- **Pagination**: Enhanced pagination with ellipses for large datasets and better navigation.
+- **Row Selection**: Supports selecting and deselecting rows for further actions, including a "select all" feature.
+- **Details Column**: Optional column for additional actions like editing or viewing details.
+- **Customizable Keys**: Each row can be uniquely identified using the `uniqueKey` prop.
+
+#### Usage
+
+**Code Snippet:**
+
+```tsx
+import DynamicTable from "./DynamicSessionTable";
+
+const ExampleComponent = () => {
+  const columns = [
+    { key: "name", header: "Name" },
+    { key: "email", header: "Email" },
+    { key: "role", header: "Role" },
+  ];
+
+  const useData = (page, search) => {
+    // Simulate a data-fetching function
+    return {
+      data: [
+        { id: "1", name: "John Doe", email: "john@example.com", role: "Admin" },
+        { id: "2", name: "Jane Doe", email: "jane@example.com", role: "User" },
+      ],
+      totalPages: 2,
+    };
+  };
+
+  const handleDetailsClick = (item) => {
+    console.log("Details clicked for", item);
+  };
+
+  return (
+    <DynamicTable
+      columns={columns}
+      headerColor="#1E293B"
+      useData={useData}
+      showBorder
+      showDetailsColumn
+      uniqueKey="id"
+      onDetailsClick={handleDetailsClick}
+    />
+  );
+};
+```
+
+#### Props
+
+| Prop                | Type                                                                    | Default     | Description                                                                |
+| ------------------- | ----------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------- |
+| `columns`           | `Array<{ key: string; header: string }>`                                | `[]`        | Defines the structure and headers of the table.                            |
+| `headerColor`       | `string`                                                                | `"#000"`    | Background color for the table header.                                     |
+| `useData`           | `(page: number, search: string) => { data: any[]; totalPages: number }` | `undefined` | Function to fetch table data dynamically based on page and search queries. |
+| `showBorder`        | `boolean`                                                               | `true`      | Whether to display a border around the table.                              |
+| `showDetailsColumn` | `boolean`                                                               | `true`      | Whether to include a "Details" column for additional actions.              |
+| `onDetailsClick`    | `(item: any) => void`                                                   | `undefined` | Callback for when the details button is clicked.                           |
+| `uniqueKey`         | `string`                                                                | `undefined` | The key used to uniquely identify rows.                                    |
+
+#### Anatomy
+
+1. **Table Header**:
+
+   - Displays column names and search inputs.
+   - Includes a checkbox for selecting all rows.
+
+2. **Table Body**:
+
+   - Renders the rows based on the fetched data.
+   - Includes individual checkboxes for row selection.
+
+3. **Pagination**:
+   - Provides navigation buttons for moving between pages.
+   - Includes ellipses for large datasets and dynamic page ranges.
+
+#### Component Code
+
+**Code Snippet:**
+
+```tsx
+export default function DynamicTable({
+  columns,
+  headerColor,
+  useData,
+  showBorder = true,
+  showDetailsColumn = true,
+  onDetailsClick,
+  uniqueKey,
+}: DynamicTableProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const page = Number(searchParams.get("page")) || 1;
+  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
+    Object.fromEntries(columns.map((col) => [col.key, ""]))
+  );
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const searchQuery = Object.entries(searchQueries)
+    .filter(([_, value]) => value.trim() !== "")
+    .map(([key, value]) => `${key}:${value}`)
+    .join(" ");
+
+  const { data, totalPages } = useData(page, searchQuery);
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allRowIds = data.map((item) => item[uniqueKey]);
+      setSelectedRows(new Set(allRowIds));
+    } else {
+      setSelectedRows(new Set());
+    }
+  };
+
+  const handleSearchChange = (field: string, value: string) => {
+    setSearchQueries({ ...searchQueries, [field]: value });
+  };
+
+  const toggleRowSelection = (id: string) => {
+    const updatedSelectedRows = new Set(selectedRows);
+    if (updatedSelectedRows.has(id)) {
+      updatedSelectedRows.delete(id);
+    } else {
+      updatedSelectedRows.add(id);
+    }
+    setSelectedRows(updatedSelectedRows);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    replace(`${pathname}?${params.toString()}`);
+  };
+
+  return (
+    <div
+      className={`p-4 rounded-xl ${
+        showBorder ? "border border-neutral-700" : ""
+      }`}
+    >
+      <Table>
+        {/* Table Header */}
+        {/* Table Body */}
+        {/* Pagination */}
+      </Table>
+    </div>
+  );
+}
+```
+
+### Customization
+
+- **Styling**: Modify header and row styles using `headerColor` and CSS classes.
+- **Actions**: Add custom actions or buttons in the "Details" column.
+- **Data Fetching**: Integrate with APIs for dynamic data loading.

@@ -1,0 +1,259 @@
+---
+title: 'Flutter Code Guidelines and Best Practices'
+description: 'A comprehensive guide to Flutter development standards including state management, dependency injection, and code quality'
+---
+
+# Flutter Code Guidelines and Best Practices
+
+## General Guidelines
+
+### Code Structure
+
+Our Flutter projects follow these core principles:
+
+- Organize code into feature-based folders
+- Keep files focused and single-responsibility
+- Use meaningful naming conventions
+- Follow the DRY (Don't Repeat Yourself) principle
+- Implement proper error handling
+- Write clear documentation and comments
+
+### State Management
+
+Best practices for managing state in Flutter applications:
+
+- Use Provider package for reactive state management
+- Prefer ChangeNotifier for simple state management needs
+- Use Consumer widgets strategically to optimize rebuilds
+- Keep business logic separate from UI
+- Use appropriate state management solutions based on requirements
+- Prefer immutable state when possible
+
+### Performance
+
+Key performance considerations:
+
+- Avoid unnecessary widget rebuilds
+- Use const constructors when possible
+- Implement proper memory management
+- Optimize image assets
+
+## GetIt Package Integration
+
+GetIt serves as our service locator for dependency injection. Configure it in `lib/main.dart`.
+
+### Setup and Configuration
+
+<CodeGroup>
+
+```dart Basic Setup
+final getIt = GetIt.instance;
+
+void setupLocator() {
+  // Register singletons
+  getIt.registerSingleton<ApiService>(ApiService());
+  
+  // Register factories
+  getIt.registerFactory<HomeViewModel>(() => HomeViewModel());
+  
+  // Register lazy singletons
+  getIt.registerLazySingleton<DatabaseService>(() => DatabaseService());
+}
+```
+
+```dart Usage Example
+// Accessing a registered service
+final apiService = getIt<ApiService>();
+
+// Using in widgets
+class HomeScreen extends StatelessWidget {
+  final viewModel = getIt<HomeViewModel>();
+  // ...
+}
+```
+
+</CodeGroup>
+
+### Best Practices for GetIt
+
+1. Initialize GetIt early in the app lifecycle
+2. Use registerFactory for view models
+3. Use registerSingleton for services that need to be always available
+4. Use registerLazySingleton for services that are needed later
+5. Keep registration in a separate setup method
+
+## Provider State Management
+
+Provider is our recommended state management solution for Flutter applications.
+
+### Setup and Implementation
+
+<CodeGroup>
+
+```dart Provider Setup
+// Define a ChangeNotifier class
+class CounterProvider extends ChangeNotifier {
+  int _count = 0;
+  int get count => _count;
+  
+  void increment() {
+    _count++;
+    notifyListeners();
+  }
+}
+
+// Setup in main.dart
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CounterProvider()),
+        // Add more providers as needed
+      ],
+      child: MyApp(),
+    ),
+  );
+}
+```
+
+```dart Usage Patterns
+// Option 1: Using Consumer
+Consumer<CounterProvider>(
+  builder: (context, counter, child) => Text('${counter.count}'),
+);
+
+// Option 2: Using context.watch()
+Text('${context.watch<CounterProvider>().count}');
+
+// Option 3: Using context.read() for one-time reads
+onPressed: () => context.read<CounterProvider>().increment(),
+```
+
+</CodeGroup>
+
+### Provider Best Practices
+
+#### Efficient Usage
+
+```dart
+// Using selector for specific properties
+Consumer<UserProvider>(
+  selector: (_, provider) => provider.username,
+  builder: (_, username, __) => Text(username),
+);
+
+// Combining multiple providers
+class CombinedWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<UserProvider, SettingsProvider>(
+      builder: (context, user, settings, child) {
+        return Text('${user.name} - ${settings.theme}');
+      },
+    );
+  }
+}
+```
+
+#### Error Handling
+
+```dart
+class DataProvider extends ChangeNotifier {
+  String? _error;
+  String? get error => _error;
+  
+  Future<void> fetchData() async {
+    try {
+      // API calls or data operations
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+}
+```
+
+### When to Use Provider
+
+Provider is ideal for:
+- Simple to medium complexity applications
+- Reactive state management needs
+- Feature-specific state management
+- Avoiding complex state management boilerplate
+
+### Testing with Provider
+
+```dart
+testWidgets('Counter increments', (WidgetTester tester) async {
+  await tester.pumpWidget(
+    ChangeNotifierProvider(
+      create: (_) => CounterProvider(),
+      child: MyApp(),
+    ),
+  );
+  
+  expect(find.text('0'), findsOneWidget);
+  await tester.tap(find.byIcon(Icons.add));
+  await tester.pump();
+  expect(find.text('1'), findsOneWidget);
+});
+```
+
+## Linter Configuration
+
+We maintain a custom linter configuration in `analysis_options.yaml` to ensure code quality and consistency.
+
+### Key Linter Rules
+
+```yaml
+analyzer:
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  errors:
+    missing_required_param: error
+    missing_return: error
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_empty_else
+    - avoid_print
+    - avoid_unused_constructor_parameters
+    - await_only_futures
+    - camel_case_types
+    - cancel_subscriptions
+    - constant_identifier_names
+    - control_flow_in_finally
+    - directives_ordering
+    - empty_catches
+    - empty_constructor_bodies
+    - library_names
+    - library_prefixes
+    - no_duplicate_case_values
+    - prefer_const_constructors
+    - prefer_final_fields
+    - prefer_is_empty
+    - prefer_is_not_empty
+    - prefer_single_quotes
+    - sort_constructors_first
+    - unnecessary_const
+    - unnecessary_new
+    - unnecessary_this
+    - valid_regexps
+```
+
+### Benefits of Linting
+
+1. Maintains consistent code style across the team
+2. Catches potential bugs early in development
+3. Enforces Flutter best practices
+4. Improves code readability and maintainability
+5. Reduces technical debt
+
+## Additional Resources
+
+- [Flutter Official Style Guide](https://dart.dev/guides/language/effective-dart/style)
+- [GetIt Package Documentation](https://pub.dev/packages/get_it)
+- [Dart Linter Rules](https://dart.dev/tools/linter-rules)

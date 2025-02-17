@@ -1,0 +1,174 @@
+---
+title: 'Firebase Analytics Integration'
+description: 'Complete guide for implementing Firebase Analytics in Flutter with event tracking and user properties'
+---
+
+# Overview
+
+Firebase Analytics provides powerful insights into user behavior and app interactions, enabling data-driven decisions for app improvement.
+
+# Configuration
+
+## Analytics Service
+
+The `AnalyticsService` class encapsulates all analytics functionality using a singleton pattern.
+
+```dart analytics_service.dart
+class AnalyticsService {
+  FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  static AnalyticsService instance = AnalyticsService._();
+  
+  // Private constructor
+  AnalyticsService._();
+}
+```
+
+# Event Tracking
+
+## Calculation Events
+
+Track calculation results with type and result data:
+
+```dart
+void logResult({
+  required CalculatorType type,
+  required String uid,
+  required double result,
+}) {
+  analytics.logEvent(
+    name: "calculation_result",
+    parameters: {
+      "type": EnumToString.convertToString(type),
+      "uid": uid,
+      "result": result,
+    }
+  );
+}
+```
+
+## Authentication Events
+
+### Sign Up Tracking
+
+```dart
+void signUpEvent(
+  String method, {
+  String? email,
+  String? uid,
+}) {
+  _analytics.logSignUp(
+    signUpMethod: method,
+    parameters: {
+      "email": email ?? "",
+      "uid": uid ?? "",
+    }
+  );
+}
+```
+
+### Login Tracking
+
+```dart
+void logInEvent(
+  String method, {
+  String? email,
+  String? uid,
+}) {
+  _analytics.logLogin(
+    loginMethod: method,
+    parameters: {
+      "email": email ?? "",
+      "uid": uid ?? "",
+    }
+  );
+}
+```
+
+# User Properties
+
+## Setting User Data
+
+Track user-specific properties for segmentation:
+
+```dart
+void setUser(
+  String uid, {
+  String? email,
+  String? name,
+  double? height,
+  double? weight,
+  GenderType? gender,
+}) {
+  _analytics.setUserId(
+    id: uid,
+    callOptions: AnalyticsCallOptions(global: true)
+  );
+  
+  // Set user properties
+  _analytics.setUserProperty(name: "uid", value: uid);
+  _analytics.setUserProperty(name: "email", value: email);
+  _analytics.setUserProperty(name: "name", value: name);
+  _analytics.setUserProperty(name: "height", value: height?.toString());
+  _analytics.setUserProperty(name: "weight", value: weight?.toString());
+  _analytics.setUserProperty(name: "gender", value: gender?.toString());
+}
+```
+
+# Screen Tracking
+
+## View Logging
+
+Track screen views across the app:
+
+```dart
+void logScreenView(String screenName) {
+  _analytics.logScreenView(
+    screenName: screenName,
+    callOptions: AnalyticsCallOptions(global: true),
+  );
+}
+```
+
+# Subscription Tracking
+
+## Purchase Events
+
+Track subscription purchases with detailed metadata:
+
+```dart
+void logSubscription(SubscriptionModel subscribe) {
+  _analytics.logPurchase(
+    callOptions: AnalyticsCallOptions(global: true),
+    transactionId: subscribe.transactionId,
+    value: subscribe.paymentAmount,
+    currency: subscribe.paymentCurrency,
+    items: [
+      AnalyticsEventItem(
+        itemId: subscribe.id,
+        itemName: "${EnumToString.convertToString(subscribe.plan)} Subscription",
+        itemCategory: "Subscription",
+        itemVariant: EnumToString.convertToString(subscribe.plan),
+        currency: subscribe.paymentCurrency,
+        price: subscribe.paymentAmount,
+        quantity: 1,
+        discount: subscribe.discount,
+        parameters: {
+          "plan": EnumToString.convertToString(subscribe.plan),
+          "payment_currency": subscribe.paymentCurrency ?? "",
+          "payment_amount": subscribe.paymentAmount ?? 0,
+          "discount": subscribe.discount ?? 0,
+          "uid": subscribe.uid ?? "",
+        }
+      )
+    ]
+  );
+}
+```
+
+# Best Practices
+
+1. Always include user identifiers when logging events
+2. Use consistent event naming conventions
+3. Include relevant parameters for detailed analysis
+4. Set user properties early in the app lifecycle
+5. Track critical user interactions and conversions

@@ -1,0 +1,76 @@
+---
+title: "Razorpay Setup"
+description: "Razorpay setup (React + Node)"
+---
+
+# Guide to Razorpay Integration
+
+Payment gateway is a technology that provides online solutions for money-related transactions, it can be thought of as a middle channel for e-commerce or any online business, which can be used to make payments and receive payments for any purpose.
+
+## Razorpay flowchart
+
+
+<Frame>
+  <img src="/images/razorpay-1.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+## Integration Steps
+
+Follow these steps to integration on your web page:
+Configuring Twilio SMS-feature with Node JS
+
+<Steps>
+  <Step title="Create account">
+create a razorpay account and generate API keys
+
+<Frame>
+  <img src="/images/razorpay-2.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+  </Step>
+  <Step title="Install Razorpay">
+ 1.Install razorpay sdk for Node
+		
+        2.npm i razorpay --save
+	3. create a POST api to create razorpay order using key ID and key 			secret generated.
+
+<Frame>
+  <img src="/images/razorpay-3.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+4. similarly create a POST API to validate the payment signature using the crypto's createHmac(). It creates a secure hash of some payment-related data (an order ID and a payment ID) using a secret key, which can be used to verify the authenticity of the payment data. This is a common technique used in secure payment systems.
+Later, match the hash generated with payment hash received from razorpay to validate the authenticity of the payment.
+  <Frame>
+  <img src="/images/razorpay-4.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+  
+  </Step>
+  <Step title="React Setup">
+1.create an onClick handler for buy button:
+ - The amount entered is in the smallest units of the currency mentioned, therefore 5000 refers to 50000paise = 500₹. 
+ - Ideally the amount, currency and all other information should be retrieved from the database.
+
+  <Frame>
+  <img src="/images/razorpay-5.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+2.. Add the razorpay script tag in the index.html file to include razorpay module
+```
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+```
+
+3.create a function to handle the payment response
+
+<Frame>
+  <img src="/images/razorpay-6.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+  </Step>
+  
+  
+
+</Steps>
+## Live vs Test Mode
+
+
+<Frame>
+  <img src="/images/razorpay-7.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+By following this guide and adhering to requirements, you can successfully integrate Twillo into your website.

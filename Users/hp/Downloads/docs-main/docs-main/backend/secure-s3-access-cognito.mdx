@@ -1,0 +1,583 @@
+---
+title: Implementing Secure S3 Access on AWS Using Cognito and STS with Serverless Architecture
+description: A comprehensive guide to securely delivering video content with AWS Cognito, STS, and serverless middleware.
+---
+
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { Steps } from "@/components/ui/steps";
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Problem Statement](#problem-statement)
+3. [Purpose](#purpose)
+4. [Prerequisites](#prerequisites)
+5. [Overview of Amazon Cognito](#overview-of-amazon-cognito)
+6. [Middleware for Authentication and Temporary Credentials](#middleware-for-authentication-and-temporary-credentials)
+7. [Setting Up Identity Pools in AWS](#setting-up-identity-pools-in-aws)
+8. [Integrating Middleware](#integrating-middleware)
+9. [Detailed Steps for Secure Access Implementation](#detailed-steps-for-secure-access-implementation)
+10. [Summary and Conclusion](#summary-and-conclusion)
+
+## Introduction
+
+Modern applications require secure access to resources, especially for delivering premium content such as videos. This document focuses on achieving secure video content delivery using AWS services and Google authentication. The solution integrates Amazon Cognito, AWS STS, and serverless middleware for secure, efficient, and temporary access management.
+
+## Problem Statement
+
+**Problem:**  
+Enable secure access to video content stored in S3 buckets while ensuring scalability and adherence to security best practices.
+
+**Solution:**  
+Authenticate users via Google, provide temporary credentials through AWS STS, and seamlessly integrate with serverless middleware.
+
+## Purpose
+
+This document provides a detailed guide to integrating Google authentication with AWS to facilitate secure access to resources. By using IAM roles and temporary credentials, developers can implement robust access control mechanisms while maintaining ease of use and scalability.
+
+## Prerequisites
+
+**To follow this guide, ensure you have:**
+
+- An active AWS account with permissions to create IAM roles, policies, and Cognito pools.
+- Access to Google authentication services and the ability to obtain Google Identity Tokens.
+- Familiarity with the AWS Management Console, AWS CLI, or SDKs for programmatic interaction.
+- Basic understanding of IAM roles, policies, and AWS security best practices.
+
+## Overview of Amazon Cognito
+
+Amazon Cognito simplifies authentication, authorization, and user management for applications.
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="cognito-features">
+    <AccordionTrigger>Features of Amazon Cognito</AccordionTrigger>
+    <AccordionContent>
+      - **User Pools:** Manage user authentication with features like sign-up,
+      sign-in, and multi-factor authentication. - **Identity Pools:** Generate
+      temporary AWS credentials for accessing AWS resources. - **Seamless
+      Integration:** Supports S3, DynamoDB, Lambda, and other AWS services.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Middleware for Authentication and Temporary Credentials
+
+The middleware component authenticates incoming requests, verifies Google Identity Tokens, and fetches temporary AWS credentials.
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="middleware-features">
+    <AccordionTrigger>Features of Middleware</AccordionTrigger>
+    <AccordionContent>
+      - **Token Verification:** Validates Google ID tokens using AWS Cognito's
+      JSON Web Key Set (JWKS) endpoint. - **Temporary Credentials:** Fetches AWS
+      STS credentials for secure access. - **Token Refresh:** Refreshes expired
+      tokens to maintain session continuity.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+### Code Snippets
+
+Save the below code under `src/middleware/cognitoValidationTempCred.ts` or your preferred filename:
+
+```typescript
+import { Request, Response, NextFunction } from "express";
+import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
+import jwksRsa, { SigningKey } from "jwks-rsa";
+import {
+  CognitoIdentityClient,
+  GetIdCommand,
+  GetCredentialsForIdentityCommand,
+} from "@aws-sdk/client-cognito-identity";
+import axios from "axios";
+import { config } from "dotenv";
+import crypto from "crypto";
+import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts";
+import { AwsCredentialIdentity } from "@aws-sdk/types";
+
+config();
+export enum UploadContext {
+  COACH = "coach",
+  USER = "user",
+}
+
+export interface AuthenticatedRequest extends Request {
+  token?: string;
+  awsCredentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken: string;
+  };
+}
+
+const client = jwksRsa({
+  jwksUri: process.env.AWS_JWKS_URI!,
+});
+
+function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
+  client.getSigningKey(header.kid, (err: Error | null, key?: SigningKey) => {
+    if (err) {
+      callback(err);
+    } else {
+      const signingKey = key?.getPublicKey();
+      if (signingKey) {
+        callback(null, signingKey);
+      } else {
+        callback(new Error("Failed to get signing key"));
+      }
+    }
+  });
+}
+
+export function verifyIdToken(idToken: string): Promise<JwtPayload> {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      idToken,
+      getKey,
+      { algorithms: ["RS256"] },
+      (err: VerifyErrors | null, decoded) => {
+        if (err) {
+          if (err.name === "TokenExpiredError") {
+            reject(new Error("TokenExpired"));
+          } else {
+            reject(err);
+          }
+        } else {
+          resolve(decoded as JwtPayload);
+        }
+      }
+    );
+  });
+}
+
+function calculateSecretHash(
+  username: string,
+  clientId: string,
+  clientSecret: string
+): string {
+  return crypto
+    .createHmac("SHA256", clientSecret)
+    .update(username + clientId)
+    .digest("base64");
+}
+
+export async function refreshIdToken(
+  refreshToken: string,
+  username: string
+): Promise<string> {
+  const clientId = process.env.AWS_COGNITO_APP_CLIENT_ID!;
+  const clientSecret = process.env.AWS_COGNITO_CLIENT_SECRET!;
+
+  try {
+    const secretHash = calculateSecretHash(username, clientId, clientSecret);
+
+    console.log(
+      "Attempting to refresh token with:",
+      refreshToken.substring(0, 10) + "..."
+    );
+
+    const response = await axios.post(
+      `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/`,
+      {
+        AuthParameters: {
+          REFRESH_TOKEN: refreshToken,
+          SECRET_HASH: secretHash,
+        },
+        AuthFlow: "REFRESH_TOKEN_AUTH",
+        ClientId: clientId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-amz-json-1.1",
+          "X-Amz-Target": "AWSCognitoIdentityProviderService.InitiateAuth",
+        },
+      }
+    );
+
+    console.log(
+      "Refresh token response:",
+      JSON.stringify(response.data, null, 2)
+    );
+
+    if (
+      response.data &&
+      response.data.AuthenticationResult &&
+      response.data.AuthenticationResult.IdToken
+    ) {
+      return response.data.AuthenticationResult.IdToken;
+    } else {
+      throw new Error("Unexpected response structure from Cognito");
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+    }
+    console.error("Error refreshing token:", error);
+    throw new Error("Failed to refresh token");
+  }
+}
+
+export async function getAWSTemporaryCredentials(
+  identityId: string,
+  idToken: string,
+  uploadContext: UploadContext
+) {
+  const cognitoIdentityClient = new CognitoIdentityClient({
+    region: process.env.AWS_REGION || "ap-south-1",
+  });
+
+  const identityPoolId =
+    uploadContext === UploadContext.COACH
+      ? process.env.AWS_COGNITO_COACH_IDENTITY_POOL_ID
+      : process.env.AWS_COGNITO_IDENTITY_POOL_ID;
+
+  const userPoolId =
+    uploadContext === UploadContext.COACH
+      ? process.env.AWS_COGNITO_COACH_USER_POOL_ID
+      : process.env.AWS_COGNITO_USER_POOL_ID;
+
+  if (!identityPoolId || !userPoolId) {
+    throw new Error(
+      "Required Cognito identity or user pool ID is not set in the environment variables"
+    );
+  }
+
+  const getIdParams = {
+    IdentityPoolId: identityPoolId,
+    Logins: {
+      [`cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${userPoolId}`]:
+        idToken,
+    },
+  };
+
+  try {
+    const { IdentityId } = await cognitoIdentityClient.send(
+      new GetIdCommand(getIdParams)
+    );
+
+    if (!IdentityId) {
+      throw new Error("Failed to get Identity ID");
+    }
+
+    const getCredentialsParams = {
+      IdentityId: IdentityId,
+      Logins: {
+        [`cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${userPoolId}`]:
+          idToken,
+      },
+    };
+
+    const credentialsData = await cognitoIdentityClient.send(
+      new GetCredentialsForIdentityCommand(getCredentialsParams)
+    );
+
+    if (
+      credentialsData.Credentials?.AccessKeyId &&
+      credentialsData.Credentials?.SecretKey &&
+      credentialsData.Credentials?.SessionToken
+    ) {
+      console.log("sessionToken", credentialsData.Credentials.SessionToken);
+      return {
+        accessKeyId: credentialsData.Credentials.AccessKeyId,
+        secretAccessKey: credentialsData.Credentials.SecretKey,
+        sessionToken: credentialsData.Credentials.SessionToken,
+      };
+    } else {
+      throw new Error("Failed to get AWS credentials from Cognito.");
+    }
+  } catch (error) {
+    const err = error as Error;
+    console.error("Error getting AWS credentials:", err.message);
+    throw err;
+  }
+}
+
+export const authenticateCognitoUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.header("Authorization");
+  if (!authHeader) {
+    return res
+      .status(401)
+      .send({ message: "Access denied, no token provided." });
+  }
+
+  const idToken = authHeader.split(" ")[1];
+  if (!idToken) {
+    return res
+      .status(401)
+      .send({ message: "Access denied, invalid token format." });
+  }
+
+  try {
+    console.log("ID Token received:", idToken);
+    const decoded = await verifyIdToken(idToken);
+    req.token = idToken;
+
+    const identityId = decoded.sub as string;
+    const uploadContext = req.path.includes("/coach")
+      ? UploadContext.COACH
+      : UploadContext.USER;
+    const credentials = await getAWSTemporaryCredentials(
+      identityId,
+      idToken,
+      uploadContext
+    );
+
+    if (!credentials) {
+      return res
+        .status(401)
+        .send({ message: "Failed to fetch AWS credentials." });
+    }
+
+    req.awsCredentials = credentials;
+
+    next();
+  } catch (err) {
+    const error = err as Error;
+
+    if (error.message === "TokenExpired") {
+      try {
+        const refreshToken = req.header("x-refresh-token");
+        if (!refreshToken) {
+          return res
+            .status(401)
+            .send({ message: "Access denied, no refresh token provided." });
+        }
+
+        const username = req.header("x-username");
+        if (!username) {
+          return res
+            .status(401)
+            .send({ message: "Access denied, no username provided." });
+        }
+
+        const newIdToken = await refreshIdToken(refreshToken, username);
+        req.token = newIdToken;
+        console.log("New ID Token:", newIdToken);
+
+        const decoded = await verifyIdToken(newIdToken);
+        const identityId = decoded.sub as string;
+        const uploadContext = req.path.includes("/coach")
+          ? UploadContext.COACH
+          : UploadContext.USER;
+        const credentials = await getAWSTemporaryCredentials(
+          identityId,
+          newIdToken,
+          uploadContext
+        );
+
+        if (!credentials) {
+          return res
+            .status(401)
+            .send({ message: "Failed to fetch AWS credentials." });
+        }
+
+        req.awsCredentials = credentials;
+        next();
+      } catch (refreshError) {
+        const refreshErr = refreshError as Error;
+        console.error("Error refreshing token:", refreshErr.message);
+        res.status(401).send({ message: "Invalid refresh token." });
+      }
+    } else {
+      console.error("Error verifying ID token:", error.message);
+      res.status(401).send({ message: "Invalid ID token." });
+    }
+  }
+};
+
+export async function assumeRole(
+  roleArn: string,
+  sessionName: string,
+  region: string,
+  baseCredentials: AwsCredentialIdentity
+) {
+  const client = new STSClient({
+    region: region,
+    credentials: baseCredentials,
+  });
+
+  const command = new AssumeRoleCommand({
+    RoleArn: roleArn,
+    RoleSessionName: sessionName,
+  });
+
+  try {
+    const response = await client.send(command);
+    return {
+      accessKeyId: response.Credentials!.AccessKeyId!,
+      secretAccessKey: response.Credentials!.SecretAccessKey!,
+      sessionToken: response.Credentials!.SessionToken,
+    };
+  } catch (error) {
+    console.error("Error assuming role:", error);
+    throw error;
+  }
+}
+```
+
+## Setting Up Identity Pools in AWS
+
+Follow these steps to set up Identity Pools:
+
+### Steps to Create an Identity Pool
+
+1. Navigate to Cognito in the AWS Management Console.
+2. Click "Create identity pool" and provide a name.
+3. Enable access to unauthenticated identities (optional).
+4. Configure IAM roles for authenticated and unauthenticated users.
+5. Link the Identity Pool with a User Pool.
+6. Save the Identity Pool configuration and note the Pool ID and Region.
+
+## Integrating Middleware
+
+Middleware acts as a bridge between your application and AWS services.
+
+### Integration Steps
+
+1. Implement middleware functions for token verification and credential fetching.
+2. Include middleware in your application routes for secure API access.
+3. Test middleware functionality using tools like Postman or curl.
+
+Refer to the provided code for examples of middleware setup and usage:
+
+```typescript
+import { Request, Response } from "express";
+import {
+  S3Client,
+  ListBucketsCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
+import { logger } from "../utils/logger";
+
+/**
+ * Controller function to fetch buckets or their contents
+ */
+export const getBucketContents = async (req: Request, res: Response) => {
+  const { bucket, prefix } = req.query;
+
+  try {
+    const credentialsResult = await fetchAWSCredentials(req);
+
+    if (!credentialsResult) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Authentication failed" });
+    }
+
+    const { accessKeyId, secretAccessKey, sessionToken, newIdToken } =
+      credentialsResult;
+
+    if (newIdToken) {
+      res.setHeader("New-Id-Token", newIdToken);
+    }
+
+    const s3 = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+        sessionToken,
+      },
+    });
+
+    if (!bucket) {
+      const buckets = await s3.send(new ListBucketsCommand({}));
+      const allowedBuckets = process.env.ALLOWED_BUCKETS?.split(",") || [];
+      const filteredBuckets =
+        buckets.Buckets?.filter((b) => allowedBuckets.includes(b.Name!)) || [];
+
+      if (filteredBuckets.length === 0) {
+        return res
+          .status(404)
+          .json({ success: false, error: "No allowed buckets found" });
+      }
+
+      return res.status(200).json({ success: true, buckets: filteredBuckets });
+    } else {
+      const params = {
+        Bucket: bucket as string,
+        Prefix: prefix ? (prefix as string) : "",
+        Delimiter: "/",
+      };
+
+      const data = await s3.send(new ListObjectsV2Command(params));
+
+      const result = {
+        success: true,
+        folders: data.CommonPrefixes?.map((cp) => cp.Prefix) || [],
+        objects:
+          data.Contents?.map((obj) => ({
+            key: obj.Key,
+            size: obj.Size,
+            lastModified: obj.LastModified,
+          })) || [],
+      };
+
+      return res.status(200).json(result);
+    }
+  } catch (error: any) {
+    logger.error("Error fetching bucket contents", {
+      message: error.message,
+      stack: error.stack,
+    });
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+};
+```
+
+### Detailed Steps for Secure Access Implementation
+
+#### Step 1: Authenticate Users with Google
+
+Integrate Google’s OAuth 2.0 mechanism to obtain Identity Tokens.
+
+#### Step 2: Verify Tokens
+
+Use the `verifyIdToken` function to validate Google tokens against AWS Cognito’s JWKS.
+
+#### Step 3: Retrieve Temporary AWS Credentials
+
+Fetch credentials using the `getAWSTemporaryCredentials` function and assign roles based on user context.
+
+#### Step 4: Securely Access S3 Buckets
+
+Use the temporary credentials to access S3 buckets.
+
+- Example: Implement the `getBucketContents` controller to list bucket contents or upload files.
+
+#### Step 5: Handle Token Expiration
+
+Refresh expired tokens using the `refreshIdToken` function.
+
+#### Step 6: Assume IAM Roles (Optional)
+
+Use the `assumeRole` function to switch to specific roles for advanced access scenarios.
+
+### Summary and Conclusion
+
+#### Key Takeaways:
+
+- **Scalability**: Use AWS Cognito and STS for scalable authentication and authorization.
+- **Security**: Adhere to best practices with temporary credentials and role-based access control.
+- **Flexibility**: Leverage serverless middleware for efficient and secure API integration.
+
+#### Next Steps:
+
+- Test your implementation in a staging environment.
+- Monitor AWS CloudWatch for logs and performance metrics.
+- Regularly review IAM policies to ensure minimal and secure permissions.

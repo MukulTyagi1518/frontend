@@ -1,0 +1,152 @@
+---
+title: "Frontend Code Guidelines "
+description: "Best practices for writing clean, maintainable, and scalable frontend code using React, Next.js, and TypeScript."
+---
+
+# Frontend Code Guidelines
+
+This guide provides comprehensive coding standards and best practices for building high-quality frontend applications using React, Next.js, and TypeScript.
+
+## General Best Practices
+
+<AccordionGroup>
+  <Accordion title="Code Consistency">
+    - Use a linter (e.g., ESLint) to enforce consistent coding styles. - Follow
+    a popular style guide, such as Airbnb's or your organization's guidelines. -
+    Use `Prettier` for auto-formatting your codebase.
+  </Accordion>
+  <Accordion title="Folder Structure">
+    - Follow a modular structure with clear separation of concerns. - Example:
+    ``` /components  /hooks /styles /utils ```
+  </Accordion>
+  <Accordion title="Environment Variables">
+    - Store sensitive data (e.g., API keys) in `.env.local`. - Access variables
+    via `process.env` and use tools like `dotenv`.
+  </Accordion>
+</AccordionGroup>
+
+## General Guidelines
+
+<AccordionGroup>
+  <Accordion title="Project Structure">
+    - Follow a modular structure: group related files into feature folders  
+    - Use a `components` directory for reusable components  
+    - Place TypeScript types in a `types` folder  
+    - Use meaningful and consistent naming conventions for files and folders
+  </Accordion>
+  <Accordion title="TypeScript Practices">
+    - Always type props and state explicitly  
+    - Use `interface` for defining component props  
+    - Leverage utility types like `Partial`, `Pick`, and `Omit` for reusability  
+    - Enable strict mode in `tsconfig.json`
+  </Accordion>
+  <Accordion title="React Best Practices">
+    - Use functional components and React hooks  
+    - Follow a declarative programming style  
+    - Avoid prop drilling; use context or state management libraries (e.g., Zustand, Redux)  
+    - Memoize components and callbacks to optimize performance
+  </Accordion>
+</AccordionGroup>
+## TypeScript Guidelines
+
+<Steps>
+  <Step title="Use Strong Typing">
+    - Avoid `any`. Use specific types or interfaces.  
+    - Use utility types like `Partial<T>`, `Pick<T>`, and `Record<K, T>` when needed.
+  </Step>
+  <Step title="Props and State">
+    - Use `Props` interfaces or type aliases for components.
+    ```tsx
+    type ButtonProps = {
+      label: string;
+      onClick: () => void;
+    };
+    const Button: React.FC<ButtonProps> = ({ label, onClick }) => (
+      <button onClick={onClick}>{label}</button>
+    );
+    ```
+  </Step>
+</Steps>
+
+## Component Design
+
+<AccordionGroup>
+  <Accordion title="Functional Components">
+    - Use functional components with hooks (`useState`, `useEffect`) instead of
+    class components.
+  </Accordion>
+  <Accordion title="Reusability">
+    - Create reusable and composable components. Avoid duplicating code. -
+    Example: Create a `Button` component with customizable props.
+  </Accordion>
+</AccordionGroup>
+
+## Performance Optimization
+
+<Steps>
+  <Step title="Avoid Re-renders">
+    - Use `React.memo` to prevent unnecessary re-renders. - Use `useCallback`
+    and `useMemo` where appropriate.
+  </Step>
+  <Step title="Lazy Loading">
+    - Use `React.lazy` and `next/dynamic` for code-splitting and lazy loading
+    components.
+  </Step>
+</Steps>
+## Coding Standards
+
+<AccordionGroup>
+  <Accordion title="Styling">
+    - Use a CSS-in-JS library (e.g., TailwindCSS, styled-components) or module-based CSS  
+    - Follow a consistent naming convention for class names (e.g., BEM)  
+    - Avoid inline styles except for dynamic styling  
+    - Keep global styles minimal
+  </Accordion>
+  <Accordion title="Component Design">
+    - Follow the Single Responsibility Principle: one component = one responsibility  
+    - Break down complex UIs into smaller, reusable components  
+    - Use default props and prop validation  
+    - Avoid mixing UI and business logic; extract logic into hooks or utils
+  </Accordion>
+  <Accordion title="Code Quality">
+    - Ensure code passes linting (e.g., ESLint) and formatting (e.g., Prettier)  
+    - Write unit tests using tools like Jest and React Testing Library  
+    - Avoid hardcoding; use configuration files or environment variables  
+    - Use meaningful variable and function names
+  </Accordion>
+</AccordionGroup>
+
+## API Integration
+
+<AccordionGroup>
+  <Accordion title="Use Axios or Fetch">
+    - Use `Axios` or `fetch` for API calls. - Abstract API calls in a separate
+    folder (e.g., `/api`).
+  </Accordion>
+  <Accordion title="Error Handling">
+    - Handle errors gracefully and show user-friendly messages. - Use a global
+    error boundary for React.
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Next.js Optimizations">
+    - Use dynamic imports for heavy components  
+    - Leverage Next.js `Image` and `Link` components for optimized assets  
+    - Use static generation (`getStaticProps`) or server-side rendering (`getServerSideProps`) when appropriate  
+    - Avoid over-fetching by using GraphQL or REST API with query parameters
+  </Accordion>
+  <Accordion title="React Optimizations">
+    - Use `React.memo` to avoid unnecessary renders  
+    - Use `useEffect` dependencies correctly to prevent infinite loops  
+    - Avoid anonymous functions and inline objects in JSX  
+    - Lazy load non-critical components
+  </Accordion>
+</AccordionGroup>
+
+## Conclusion
+
+Following these guidelines will help ensure consistent, maintainable, and efficient frontend code. Adopting a modular structure and best practices for TypeScript and React will improve scalability and collaboration.
+

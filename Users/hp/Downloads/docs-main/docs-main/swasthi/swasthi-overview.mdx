@@ -1,0 +1,190 @@
+---
+title: 'Flutter Setup and Project Structure'
+description: 'Complete guide for setting up and understanding the Flutter project architecture'
+---
+
+# Flutter Installation
+
+## Prerequisites
+
+Before getting started, ensure you have the following tools installed:
+
+- **Git**: Version control system for managing your project
+- **Flutter SDK**: The Flutter framework for building applications
+- **Dart SDK**: Comes bundled with Flutter
+- **Android Studio**: IDE for Android development
+- **Xcode**: Required for iOS development (macOS only)
+
+## Installation Steps
+
+### 1. Download Flutter SDK
+
+Visit the Flutter official website and download the latest stable release for your operating system.
+
+### 2. Extract the ZIP File
+
+Extract the downloaded file to a desired location on your system:
+- Windows: `C:\flutter`
+- macOS: `/Users/your_username/flutter`
+
+### 3. Add Flutter to PATH
+
+Update your system's PATH variable to include the `flutter/bin` directory:
+
+<CodeGroup>
+  ```bash macOS
+  export PATH="$PATH:/path/to/flutter/bin"
+  ```
+  
+  ```plaintext Windows
+  # Add Flutter bin directory to PATH through Environment Variables settings
+  ```
+</CodeGroup>
+
+### 4. Run Flutter Doctor
+
+Open a terminal or command prompt and run:
+
+```bash
+flutter doctor
+```
+
+This command checks your environment and displays a report of your Flutter installation status. Follow any additional instructions to complete the setup.
+
+# Project Setup
+
+## Getting Started
+
+### Clone the Project
+
+```bash
+git clone https://github.com/your_username/swasthi.git
+cd swasthi
+```
+
+### Install Dependencies
+
+```bash
+flutter pub get
+```
+
+# Project Structure
+
+The Swasthi Flutter application follows a structured directory layout that organizes code and resources efficiently:
+
+```plaintext
+lib/
+├── firebase_options.dart     # Firebase configuration settings
+├── main.dart                 # Entry point of the Flutter application
+├── main_dev.dart            # Development entry point
+├── l10n/                    # Localization files
+├── languages/               # Language-specific files
+├── models/                  # Data models
+├── providers/              # State management providers
+├── repositories/           # Data repositories
+├── routers/               # Routing files
+├── screens/               # UI screens
+├── scripts/               # Helper scripts
+├── services/              # Services for business logic
+├── ui/                    # UI components
+├── utils/                 # Utility functions
+├── validators/            # Input validators
+└── widgets/               # Reusable widgets
+```
+
+# Configuration Files
+
+## pubspec.yaml
+
+The `pubspec.yaml` file manages dependencies and project metadata. Key sections include:
+- **dependencies**: Lists all packages used in the project
+- **environment**: Specifies Dart SDK version constraints
+
+## Firebase Configuration
+
+The `firebase_options.dart` file contains configuration settings for Firebase services, including API keys and project identifiers.
+
+## Platform-Specific Configuration
+
+<CodeGroup>
+  ```plaintext Android
+  android/app/build.gradle contains Android-specific build settings
+  ```
+
+  ```plaintext iOS
+  ios/Runner.xcodeproj manages iOS-specific settings
+  ```
+</CodeGroup>
+
+# Flavor Configuration
+
+## Application Entry Points
+
+### main.dart
+The production entry point that initializes Firebase and runs the application.
+
+### main_dev.dart
+The development entry point for testing and debugging.
+
+### root.dart
+Contains the `Root` widget for setting up providers and routing.
+
+## Android Flavor Setup
+Configure different build variants in the `android/build.gradle` files for various environments.
+
+# Firebase Setup
+
+Follow these steps to set up Firebase:
+
+1. Create a Firebase project in the Firebase Console
+2. Add Firebase to your apps:
+   - Download `google-services.json` for Android
+   - Download `GoogleService-Info.plist` for iOS
+3. Initialize Firebase in your app:
+
+```dart
+await Firebase.initializeApp();
+```
+
+4. Configure SHA keys for Android:
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+# Development Environment
+
+## Required Tools
+
+- Flutter SDK (verify with `flutter doctor`)
+- Recommended IDEs:
+  - Android Studio
+  - Visual Studio Code with Flutter extensions
+
+## Testing Environment
+
+Set up emulators/simulators following the Flutter documentation:
+- Android Virtual Device (AVD)
+- iOS Simulator (macOS only)
+
+# Running and Building
+
+## Development
+
+To run the application in development mode:
+
+```bash
+flutter run
+```
+
+## Building the Application
+
+<CodeGroup>
+  ```bash Android
+  flutter build apk
+  ```
+
+  ```bash iOS
+  flutter build ios
+  ```
+</CodeGroup>

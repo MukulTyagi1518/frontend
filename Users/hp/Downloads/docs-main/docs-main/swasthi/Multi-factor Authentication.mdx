@@ -1,0 +1,99 @@
+---
+title: "Multiple Factor  Component"
+description: "Add the Multiple Factor Authentication components in your Next.js project"
+---
+
+### Multiple Factor Component 
+
+<Frame>
+  <img src="/images/multiplefactor.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+Here's how to use the  component:
+
+```jsx
+"use client";
+
+import { useState, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+
+const OTP_LENGTH = 6;
+
+export default function MultiFactorAuth() {
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Handle OTP input changes
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return; // Allow only numbers
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Move to next input field
+    if (value && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle backspace and move focus
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="w-full max-w-md rounded-lg bg-neutral-900 p-6 text-white shadow-lg">
+        {/* Logo */}
+        <div className="flex flex-col items-center">
+          <Image src="/logo.svg" alt="Logo" width={60} height={60} />
+          <h2 className="mt-2 text-2xl font-bold">Swasthi</h2>
+        </div>
+
+        {/* Title */}
+        <h3 className="mt-4 ml-106 mr-106 text-center text-xl font-semibold">Multi-factor Authentication</h3>
+        <p className="text-center ml-106 mr-106 text-gray-400">Enter the 6-digit code from your mail</p>
+        <p className="text-center ml-106 mr-106 text-gray-400">Authentication code</p>
+
+        {/* OTP Input Fields */}
+        <div className="mt-4 ml-106 text-center mr-106 flex justify-center space-x-2">
+          {otp.map((digit, index) => (
+            <Input
+            key={index}
+            ref={(el) => {
+              inputRefs.current[index] = el;
+            }}
+            type="text"
+            value={digit}
+            maxLength={1}
+            onChange={(e) => handleChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(index, e)}
+            className="h-12 w-12 rounded-lg border border-gray-700 bg-black text-center text-xl text-white focus:border-[#FF4D4F] focus:outline-none focus:ring-2 focus:ring-[#FF4D4F]"
+          />
+          
+          ))}
+        </div>
+
+        {/* Resend Link */}
+        <p className="mt-3 text-center text-sm text-gray-400">
+          Didn’t receive Mail? <span className="cursor-pointer font-semibold text-white hover:underline">Resend Mail</span>
+        </p>
+
+        {/* Verify Button */}
+        <div className="flex justify-center mt-6">
+        <Button className="mt-4 w-[150px] bg-white text-black hover:bg-gray-300">Verify</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+```

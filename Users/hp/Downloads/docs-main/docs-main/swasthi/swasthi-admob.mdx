@@ -1,0 +1,172 @@
+---
+title: Google Admob Integration
+description: Comprehensive guide to implementing Google Mobile Ads in Flutter applications
+---
+
+# Google Mobile Ads Setup
+
+## Overview
+
+Integrate Google Mobile Ads into your Flutter application to monetize your app and provide a revenue stream through targeted advertising.
+
+## Prerequisites
+
+<Tip>Ensure you have the following before starting:</Tip>
+
+- Flutter SDK installed
+- Google AdMob account
+- Access to app's source code
+
+## Step 1: Add Dependencies
+
+<CodeGroup>
+```yaml pubspec.yaml
+dependencies:
+  google_mobile_ads: ^2.0.0
+```
+
+```bash Terminal
+flutter pub get
+```
+</CodeGroup>
+
+## Step 2: Configure AdMob Account
+
+<Steps>
+1. Navigate to AdMob Console
+2. Create a new app or select existing app
+3. Note down:
+   - App ID
+   - Ad Unit IDs
+</Steps>
+
+## Step 3: Initialize Google Mobile Ads SDK
+
+```dart
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
+  runApp(MyApp());
+}
+```
+
+## Step 4: Load and Display Banner Ads
+
+```dart
+class _MyHomePageState extends State<MyHomePage> {
+  BannerAd? _bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _bannerAd = BannerAd(
+      adUnitId: 'YOUR_BANNER_AD_UNIT_ID',
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {});
+        },
+        onAdFailedToLoad: (_, error) {
+          print('BannerAd failed to load: $error');
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Google Mobile Ads Example')),
+      body: Column(
+        children: <Widget>[
+          if (_bannerAd != null)
+            Container(
+              height: 50,
+              child: AdWidget(ad: _bannerAd!),
+            ),
+          // Other widgets
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+}
+```
+
+## Domain Verification
+
+<Warning>Proper domain verification is crucial for ad serving.</Warning>
+
+### Steps to Verify Domain
+
+1. Go to AdMob account
+2. Navigate to **Settings** > **Account information**
+3. Follow domain verification instructions
+
+### Create app-ads.txt
+
+Create an `app-ads.txt` file in your domain's root directory:
+
+```txt
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+```
+
+<Tip>Replace `pub-XXXXXXXXXXXXXXXX` with your actual AdMob publisher ID</Tip>
+
+## Best Practices
+
+- Always test ads in test mode during development
+- Implement proper ad lifecycle management
+- Handle ad loading and error scenarios
+- Respect user experience when placing ads
+
+## Common Pitfalls
+
+<Warning>Avoid these common mistakes:</Warning>
+
+1. Not initializing MobileAds before using
+2. Forgetting to dispose of ads
+3. Placing too many ads in your app
+4. Ignoring ad load failures
+
+## Troubleshooting
+
+- Check AdMob account configuration
+- Verify ad unit IDs
+- Ensure proper SDK initialization
+- Review error logs
+- Test on multiple devices
+
+## Advanced Ad Types
+
+Beyond banner ads, explore:
+- Interstitial Ads
+- Rewarded Ads
+- Native Ads
+
+## Compliance and Policies
+
+<Tip>Follow Google AdMob policies carefully</Tip>
+
+- Adhere to content guidelines
+- Implement age-appropriate ad targeting
+- Respect user privacy
+- Maintain app quality
+
+## Next Steps
+
+- Implement multiple ad formats
+- Set up ad targeting
+- Monitor ad performance
+- Optimize ad placement
+
+## Conclusion
+
+Google Mobile Ads provide a robust monetization strategy for Flutter apps. Careful implementation and adherence to best practices are key to success.

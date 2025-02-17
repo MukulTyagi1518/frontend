@@ -1,0 +1,196 @@
+---
+title: 'Newsletter'
+api: 'POST /api/fitnearn/web/newsletter-subscribe'
+description: 'Newsletter subscription and management endpoints'
+---
+
+# Newsletter Management
+
+## Subscribe to Newsletter
+
+<ParamField body="email" type="string" required>
+  The email address to subscribe to the newsletter
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the subscription was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message describing the result of the operation
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request POST \
+  --url 'https://api.example.com/api/fitnearn/web/newsletter-subscribe' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "email": "user@example.com"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "message": "Successfully subscribed to newsletter"
+}
+```
+</ResponseExample>
+
+## Unsubscribe from Newsletter
+
+<ParamField body="email" type="string" required>
+  The email address to unsubscribe from the newsletter
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the unsubscription was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message describing the result of the operation
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request POST \
+  --url 'https://api.example.com/api/fitnearn/web/newsletter-delete' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "email": "user@example.com"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "message": "Successfully unsubscribed from newsletter"
+}
+```
+</ResponseExample>
+
+## Verify Newsletter Subscription
+
+### Query Parameters
+
+<ParamField query="email" type="string" required>
+  The email address to verify
+</ParamField>
+
+<ParamField query="token" type="string" required>
+  The verification token received in the email
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the verification was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message describing the result of the operation
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request GET \
+  --url 'https://api.example.com/api/fitnearn/web/users/newsletter-verify?email=user@example.com&token=784b25e0-f5bf-494d-9603-f22240caf20b'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "message": "Successfully subscribed to newsletter"
+}
+```
+</ResponseExample>
+
+## Broadcast Newsletter
+
+Send newsletter to all subscribed users.
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the broadcast was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message describing the result of the operation
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request POST \
+  --url 'https://api.example.com/api/fitnearn/web/users/newsletter-broadcast'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "message": "Successfully broadcasted newsletter"
+}
+```
+</ResponseExample>
+
+## Get Newsletter
+
+Retrieve the current newsletter content.
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message describing the result of the operation
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request GET \
+  --url 'https://api.example.com/api/fitnearn/web/users/newsletter-get'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "message": "Successfully got newsletter"
+}
+```
+</ResponseExample>
+
+## Error Handling
+
+All endpoints follow standard HTTP status codes:
+
+| Status Code | Description                                                   |
+|------------|---------------------------------------------------------------|
+| 200        | Operation completed successfully                              |
+| 400        | Bad request - Invalid parameters                              |
+| 401        | Unauthorized - Authentication required                        |
+| 404        | Resource not found                                           |
+| 500        | Internal server error                                        |
+
+## Notes
+
+- Email addresses must be valid and properly formatted
+- Verification tokens are valid for 24 hours
+- Newsletter broadcasts are rate-limited
+- Unsubscribe links are automatically included in all newsletters

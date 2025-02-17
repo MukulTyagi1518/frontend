@@ -1,0 +1,143 @@
+---
+title: "Chat Bubble Component"
+description: "Integrate and customize a user-friendly chat bubble component in your Next.js project"
+---
+
+### Chat Bubble Component
+
+<Frame>
+  <img src="/images/chat-bubble.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+#### Overview
+
+The `ChatBubble` component is a versatile and visually appealing chat UI element. It provides features like user avatars, timestamps, and dropdown menus for actions, making it suitable for modern chat interfaces.
+
+#### Features
+
+- **Avatar Display**: Shows the user's profile picture alongside their message.
+- **Message Bubble**: Displays the user's name, message, time, and date in a styled chat bubble.
+- **Dropdown Menu**: Includes a three-dots dropdown for additional actions or links.
+- **Checkbox Support**: Allows selection for additional functionality.
+
+#### Usage
+
+**Code Snippet:**
+```tsx
+import ChatBubble from "./ChatBubble";
+import profileImage from "@/images/profile-image.png";
+
+const ExampleComponent = () => {
+  const dropdownOptions = [
+    { label: "Edit", link: "/edit" },
+    { label: "Delete", link: "/delete" },
+  ];
+
+  return (
+    <ChatBubble
+      profileImage={profileImage}
+      userName="John Doe"
+      comment="This is a sample chat message."
+      time="12:45 PM"
+      date="01-01-2023"
+      bgColor="bg-gray-200"
+      borderColor="border-gray-300"
+      textColor="text-gray-900"
+      labelId="chat1"
+      labelText="Select this chat"
+      dropdownOptions={dropdownOptions}
+    />
+  );
+};
+```
+
+#### Props
+
+| Prop             | Type                                | Default      | Description                                              |
+|------------------|-------------------------------------|--------------|----------------------------------------------------------|
+| `profileImage`   | `StaticImageData | string`           | `undefined`  | Path to the user's profile image.                        |
+| `userName`       | `string`                            | `undefined`  | The name of the user sending the message.               |
+| `comment`        | `string`                            | `undefined`  | The message content.                                     |
+| `time`           | `string`                            | `undefined`  | Time of the message in `HH:MM` format.                  |
+| `date`           | `string`                            | `undefined`  | Date of the message in `dd-mm-yyyy` format.             |
+| `bgColor`        | `string`                            | `undefined`  | Background color for the chat bubble.                   |
+| `borderColor`    | `string`                            | `undefined`  | Border color for the chat bubble.                       |
+| `textColor`      | `string`                            | `text-gray-900` | Text color for the user name and message.               |
+| `labelId`        | `string`                            | `undefined`  | ID for the checkbox label.                              |
+| `labelText`      | `string`                            | `undefined`  | Text displayed next to the checkbox.                    |
+| `dropdownOptions`| `Array<{ label: string; link: string }>` | `[]`         | Options for the dropdown menu.                          |
+
+#### Anatomy
+
+1. **Avatar**:
+   - Displays the user's profile picture.
+
+2. **Chat Bubble**:
+   - Contains the user's name, message, time, and date.
+
+3. **Dropdown Menu**:
+   - Offers options like Edit, Delete, or custom actions.
+
+4. **Checkbox**:
+   - Allows selection of chat bubbles for further actions.
+
+#### Component Code
+
+**Code Snippet:**
+```tsx
+const ChatBubble: React.FC<ChatBubbleProps> = ({
+  profileImage,
+  userName,
+  comment,
+  time,
+  date,
+  bgColor,
+  borderColor,
+  textColor = "text-gray-900",
+  labelId,
+  labelText,
+  dropdownOptions,
+}) => {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-x-2">
+          <Checkbox id={labelId} className="border-gray-600 ml-40" />
+          <label htmlFor={labelId} className="text-sm font-medium text-white">
+            {labelText}
+          </label>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-2.5 relative">
+        <Image
+          className="rounded-full"
+          src={profileImage}
+          alt={`${userName} Avatar`}
+          width={32}
+          height={32}
+        />
+
+        <div
+          className={`flex flex-col w-full max-w-[320px] p-4 ${bgColor} ${borderColor} rounded-e-xl rounded-es-xl`}
+        >
+          <div className="flex items-center space-x-2">
+            <span className={`text-sm font-semibold ${textColor}`}>
+              {userName}
+            </span>
+            <span className="text-sm font-normal text-gray-500">{time}</span>
+          </div>
+          <p className={`text-sm font-normal py-2.5 ${textColor}`}>{comment}</p>
+          <span className="text-sm font-normal text-gray-500 mt-2">{date}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### Customization
+
+- **Styling**: Modify the colors and dimensions using the `bgColor`, `borderColor`, and `textColor` props.
+- **Dropdown Menu**: Add custom options and actions in the dropdown menu.
+- **Avatar**: Replace the avatar with custom images or placeholders as needed.

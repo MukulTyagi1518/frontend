@@ -1,0 +1,152 @@
+---
+title: "Combobox Component"
+description: "Integrate and customize a searchable and multi-select combobox in your Next.js project"
+---
+
+### Combobox Component
+
+<Frame>
+  <img src="/images/combobox.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+#### Overview
+
+The `Combobox` component provides a customizable, searchable, and multi-select dropdown solution. It is designed to handle dynamic lists with ease and offers an intuitive user interface for selecting multiple options.
+
+#### Features
+
+- **Searchable Options**: Filter dropdown options dynamically as the user types.
+- **Multi-Select Support**: Allows selecting multiple items with clear UI feedback.
+- **Customizable Placeholder and Styling**: Define the placeholder text and extend styles as needed.
+
+#### Usage
+
+**Code Snippet:**
+```tsx
+import { Combobox } from "./Combobox";
+
+const ExampleComponent = () => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  const handleSelectionChange = (selected: string[]) => {
+    setSelectedOptions(selected);
+  };
+
+  return (
+    <Combobox
+      options={["Option 1", "Option 2", "Option 3"]}
+      selectedOptions={selectedOptions}
+      onSelectionChange={handleSelectionChange}
+      placeholder="Select options..."
+      className="custom-combobox"
+    />
+  );
+};
+```
+
+#### Props
+
+| Prop              | Type               | Default       | Description                                                  |
+|-------------------|--------------------|---------------|--------------------------------------------------------------|
+| `options`         | `string[]`         | `[]`          | Array of available options to display in the dropdown.       |
+| `selectedOptions` | `string[]`         | `[]`          | Array of currently selected options.                        |
+| `onSelectionChange` | `(selected: string[]) => void` | `undefined` | Callback to update selected options.                        |
+| `placeholder`     | `string`           | `"Search..."` | Text to display when no options are selected.               |
+| `className`       | `string`           | `""`          | Additional classes for styling the component.               |
+
+#### Anatomy
+
+1. **Dropdown Button**:
+   - Displays the selected options or placeholder.
+   - Toggles the visibility of the dropdown.
+
+2. **Search Input**:
+   - Filters the options based on user input.
+
+3. **Options List**:
+   - Displays the list of options with checkboxes for selection.
+   - Shows a "No options found" message when no results match the query.
+
+#### Component Code
+
+**Code Snippet:**
+```tsx
+export function Combobox({
+  options,
+  selectedOptions,
+  onSelectionChange,
+  placeholder = "Search...",
+  className = "",
+}: ComboboxProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
+
+  const filteredOptions = query
+    ? options.filter((option) =>
+        option.toLowerCase().includes(query.toLowerCase())
+      )
+    : options;
+
+  const toggleOption = (option: string) => {
+    const updatedSelections = selectedOptions.includes(option)
+      ? selectedOptions.filter((item) => item !== option)
+      : [...selectedOptions, option];
+    onSelectionChange(updatedSelections);
+  };
+
+  return (
+    <div className={`combobox-root relative ${className}`}>
+      <div
+        className="flex items-center justify-between px-3 py-2 bg-[#262626] text-gray-400 border border-gray-600 rounded-md cursor-pointer"
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        <span>
+          {selectedOptions.length > 0
+            ? selectedOptions.join(", ")
+            : placeholder}
+        </span>
+        <ChevronDown className="w-5 h-5 text-gray-400" />
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-10 mt-2 w-full max-h-60 overflow-auto rounded-md bg-[#262626] text-white shadow-lg ring-1 ring-black ring-opacity-5">
+          <div className="flex items-center px-4 py-2 bg-[#171717]">
+            <Search className="w-5 h-5 text-gray-400 mr-2" />
+            <Input
+              placeholder={placeholder}
+              className="w-full text-gray-400 bg-transparent border-none focus:ring-0"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <ul className="divide-y divide-gray-600">
+            {filteredOptions.map((option) => (
+              <li
+                key={option}
+                className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-700"
+              >
+                <Checkbox
+                  checked={selectedOptions.includes(option)}
+                  onCheckedChange={() => toggleOption(option)}
+                />
+                <span className="ml-2">{option}</span>
+              </li>
+            ))}
+          </ul>
+          {filteredOptions.length === 0 && (
+            <div className="px-4 py-2 text-center text-gray-500">
+              No options found
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Customization
+
+- **Styling**: Add custom styles via the `className` prop or extend the component styles.
+- **Icons**: Replace `ChevronDown` or `Search` with other icons as needed.
+- **No Options Message**: Customize the message when no options are found.

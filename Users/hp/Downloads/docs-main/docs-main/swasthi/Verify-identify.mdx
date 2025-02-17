@@ -1,0 +1,97 @@
+---
+title: "Verify Identity Component"
+description: "Add the Verify Identity  components in your Next.js project"
+---
+
+### Verify Identity Component 
+
+<Frame>
+  <img src="/images/verifyidentity.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+Here's how to use the  component:
+
+```jsx
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/radio-group"
+import Image from "next/image"
+import type React from "react" // Added import for React
+
+export default function VerifyIdentity() {
+  const [verificationMethod, setVerificationMethod] = useState<string>("")
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Add your verification logic here
+    console.log("Selected method:", verificationMethod)
+  }
+
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="w-[400px] p-6 rounded-lg bg-[#2a2a2a]">
+        <div className="flex flex-col items-center space-y-2">
+          <Image
+           src="/logo.svg"
+            alt="Swasthi Logo"
+            width={64}
+            height={64}
+            className="rounded-full"
+          />
+          <h1 className="text-xl font-semibold text-white">Swasthi</h1>
+        </div>
+
+        <div className="mt-6 text-left">
+          <h2 className="text-2xl font-semibold text-white">Verify Your Identity</h2>
+          <p className="text-gray-400 mt-1">We need to confirm it's really you</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-6">
+          <p className="text-gray-400 mb-4">Select your preferred verification mode</p>
+
+          <RadioGroup value={verificationMethod} onValueChange={setVerificationMethod} className="space-y-3">
+  {/* OTP via Message */}
+  <div className="flex items-center space-x-3">
+    <RadioGroupItem value="msg" id="msg" className="w-5 h-5 border-gray-400 checked:bg-white" />
+    <input
+      type="text"
+      placeholder="Send OTP via Message"
+      className="w-full p-3 rounded-lg border-2 border-neutral-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400"
+      disabled={verificationMethod !== "msg"} // Enable input only when selected
+    />
+  </div>
+
+  {/* OTP via Email */}
+  <div className="flex items-center space-x-3">
+    <RadioGroupItem value="email" id="email" className="w-5 h-5 border-gray-400 checked:bg-white" />
+    <input
+      type="email"
+      placeholder="Send OTP via  email"
+      className="w-full p-3 rounded-lg border-2 border-neutral-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400"
+      disabled={verificationMethod !== "email"} // Enable input only when selected
+    />
+  </div>
+</RadioGroup>
+
+<div className="flex justify-center mt-6">
+          <Button
+            type="submit"
+           className="w-[150px] bg-white text-black hover:bg-gray-100 h-[52px] text-[16px] font-medium rounded-lg"
+            disabled={!verificationMethod}
+          >
+            Confirm
+          </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+
+
+
+```

@@ -1,0 +1,187 @@
+---
+title: 'Firestore Collections and Models'
+description: 'Comprehensive guide to Firestore collections, data models, and their implementations in the Flutter project'
+---
+
+# Collections Overview
+
+## Users Collection
+
+**Collection Name**: `users`  
+**Purpose**: Stores user-related data
+
+### Account Model
+
+```dart lib/model/Account.model.dart
+class Account {
+  final String uid;
+  final String email;
+  final String authProvider;
+  final String name;
+  final String? image;
+  final String? activityLevel;
+  final String? connectedService;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final double? height;
+  final String? heightType;
+  final int? age;
+  final double? weight;
+  final String? weightType;
+  final String? gender;
+  final String? fcmToken;
+  // ... constructor and methods
+}
+```
+
+### Implementation Details
+- Uses `freezed` package for immutability
+- Custom converters for `Timestamp` and enum types
+- JSON serialization support
+
+## Calculators Collection
+
+**Collection Name**: `calculator`  
+**Purpose**: Stores health and fitness metrics calculations
+
+### Calculator Model Types
+
+- Body Mass Index
+- Basal Metabolic Rate
+- Blood Alcohol Concentration
+- Body Fat Percentage
+- Body Type
+- Body Water Volume
+- Calorie Burn
+- Daily Water Intake
+- Healthy Blood Pressure
+- Healthy Blood Volume
+- Lean Body Mass
+- Sleep Debt
+- Total Daily Energy Expenditure
+- Weight Gain/Loss
+
+```dart lib/model/Calculator.model.dart
+class CalculatorModel {
+  final DateTime createdAt;
+  final String type;
+  final String userId;
+  final String id;
+  // ... specific calculation model fields
+}
+```
+
+### Implementation Details
+- Uses `enum_to_string` for calculation types
+- JSON serialization for Firestore integration
+- Supports multiple calculation types
+
+## Goals Collection
+
+**Collection Name**: `goal`  
+**Purpose**: Stores user health and fitness goals
+
+### Goal Model
+
+```dart lib/model/Goal.model.dart
+class Goal {
+  final String uid;
+  final int dailyWaterGoal;
+  final int targetWaterGoal;
+  final DateTime dailySleepGoal;
+  final DateTime targetSleepGoal;
+  final DateTime dailyWorkoutGoal;
+  final DateTime targetWorkoutGoal;
+  final int dailyStepsGoal;
+  final int targetStepsGoal;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool waterForEveryDay;
+  final bool sleepForEveryDay;
+  final bool workoutForEveryDay;
+  final bool stepsForEveryDay;
+  // ... constructor and methods
+}
+```
+
+## Moods Collection
+
+**Collection Name**: `moods`  
+**Purpose**: Tracks user emotional states
+
+### Mood Model
+
+```dart lib/model/mood.model.dart
+class MoodModel {
+  final String uid;
+  final MoodType moodType;
+  final List<String> reasons;
+  final DateTime createdAt;
+  final String? otherReason;
+  // ... constructor and methods
+}
+```
+
+### Implementation Details
+- Uses `freezed` for immutability
+- Custom converters for enums and timestamps
+- Supports multiple mood reasons
+
+## Reminders Collection
+
+**Collection Name**: `reminders`  
+**Purpose**: Manages user notifications and tasks
+
+### Reminder Model
+
+```dart lib/model/Reminder.model.dart
+class ReminderModel {
+  final String goal;
+  final DateTime time;
+  final List<int> days;
+  final bool everyDay;
+  final bool isActive;
+  final String id;
+  final DateTime createdAt;
+  final String userId;
+  // ... constructor and methods
+}
+```
+
+## Subscriptions Collection
+
+**Collection Name**: `subscriptions`  
+**Purpose**: Manages user subscription data
+
+### Subscription Model
+
+```dart lib/model/Subscription.model.dart
+class SubscriptionModel {
+  final String id;
+  final String uid;
+  final SubscriptionPlan plan;
+  final SubscriptionStatus status;
+  final PaymentType paymentType;
+  final bool isTrial;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double paymentAmount;
+  final String? orderId;
+  final String paymentCurrency;
+  final String paymentCurrencySymbol;
+  final String transactionId;
+  final String merchantTransactionId;
+  final PaymentStatus paymentStatus;
+  final DateTime createdAt;
+  final double? discount;
+  final String? repeatId;
+  // ... constructor and methods
+}
+```
+
+### Implementation Details
+- Comprehensive payment tracking
+- Support for trial periods
+- Multiple currency handling
+- Payment status tracking
+- Subscription plan management

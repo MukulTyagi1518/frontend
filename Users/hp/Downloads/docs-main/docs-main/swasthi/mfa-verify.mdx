@@ -1,0 +1,73 @@
+---
+title: "Multiple Factor Authentication Verify "
+description: "Add the Multiple Factor Authentication Verify  in your Next.js project"
+---
+
+### Multiple Factor Component 
+
+<Frame>
+  <img src="/images/mfaverify.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+Here's how to use the  component:
+
+```jsx
+"use client";
+
+import { useState } from "react";
+import { AuthLayout } from "@/components/ui/auth-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export default function MFAVerifyPage() {
+  const [code, setCode] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle MFA verification
+  };
+
+  return (
+    <AuthLayout>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold text-white">
+            Keeping you secure
+          </h2>
+          <p className="text-gray-400">
+            Your account is protected with multi-factor authentication (MFA)
+          </p>
+          <p className="text-gray-400">
+            To finish signing in, enter the code from your MFA device below.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-white">MFA Code</label>
+            <Input
+              type="text"
+              placeholder="Enter code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="bg-[#1C1C1C] border-0 text-white placeholder:text-gray-500"
+            />
+          </div>
+          <div className="flex justify-center ">
+          <Button
+            type="submit"
+            className="w-[150px] h-[52px] bg-white text-black hover:bg-gray-100 rounded-lg text-[15px] font-medium "
+            disabled={!code}
+          >
+            SIGN IN
+          </Button>
+          </div>
+        </form>
+      </div>
+    </AuthLayout>
+  );
+}
+
+
+
+
+```

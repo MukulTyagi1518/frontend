@@ -1,0 +1,241 @@
+---
+title: "Product Card"
+description: "A step-by-step guide on how to use the Product Card component in your project. you can use this product card component if you are using Nextjs or Reactjs with Typescript and Tailwind css for a project."
+---
+
+import Image from "next/image";
+
+### Review
+
+<Frame>
+  <img src="/images/productCard.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+## Make a component
+
+make a component file ProductCard.tsx and paste the below code:
+
+```jsx
+"use client";
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import productImg from "../../../../public/mat.png";
+import { useRouter } from "next/navigation";
+
+type cardProps = {
+  id: string,
+  imageUrl?: string,
+  label: string,
+  name: string,
+  description: string,
+  price: number,
+  discounted_price: number,
+  discount: number,
+  AddToBag: string,
+  rating: number,
+  reviews: number,
+  buttonText: string,
+  isLiked: boolean,
+  category: string,
+  size: string,
+  variantId: string,
+};
+
+const ProductCard: React.FC<cardProps> = ({
+  id,
+  imageUrl,
+  label,
+  name,
+  description,
+  price,
+  discounted_price,
+  discount,
+  AddToBag,
+  rating,
+  reviews,
+  buttonText,
+  isLiked,
+  category,
+  size,
+  variantId,
+}) => {
+  const router = useRouter();
+
+  const product: CartItem = {
+    id,
+    name,
+    price,
+    image: imageUrl || "",
+    quantity: 1,
+    category,
+    size,
+    discountRate: discount,
+    priceOff: discounted_price,
+    variantId: variantId,
+  };
+
+  const handleAddToCart = async (event: React.MouseEvent) => {
+    // handle add to cart functionality here
+    // make an api call for adding items to the backend
+  };
+
+  const handleRedirection = () => {
+    router.push(`/ProductInfo/${id}`);
+  };
+
+  return (
+    <div onClick={handleRedirection} className="max-w-xs rounded-lg shadow-lg ">
+      <div className="relative">
+        <Link href={`/ProductInfo/${id}`}>
+          <Image
+            src={imageUrl || productImg}
+            alt={name}
+            layout="fixed"
+            width={380}
+            height={300}
+            className="rounded-[16px] object-cover w-[380px] h-[300px] cursor-pointer"
+            loading="lazy"
+          />
+        </Link>
+        {label ? (
+          <span className="absolute gymTag top-4 left-4 px-2 py-1 text-[#FFFFFF] text-base font-bold">
+            {label}
+          </span>
+        ) : (
+          ""
+        )}
+        <span className="absolute top-4 right-4">
+          //
+          <ProductLikeBtn productId={id} initialLiked={isLiked} />
+          //use like button component here
+        </span>
+      </div>
+
+      <div className="mt-4 flex justify-evenly">
+        <div className="space-y-2">
+          <div className="w-40">
+            <h4 className="text-xl font-bold text-white truncate">{name}</h4>
+          </div>
+          <p className="text-sm flex items-center gap-1 text-[#D4D4D4]">
+            {description.length > 60
+              ? description.slice(0, 48) + "..."
+              : description}
+          </p>
+          <span className="text-[14px] text-[#D4D4D4] font-semibold leading-normal">
+            {category}
+          </span>
+          <p className={`text-base text-[#E5E5E5] font-bold`}>{price}</p>
+          <p className="flex justify-start items-center gap-1">
+            <span className="text-[14px] text-[#A3A3A3] font-medium leading-normal line-through">
+              ₹{discounted_price}
+            </span>
+            <span className="text-[12px] text-[#FACA15] font-medium leading-normal">
+              Get ({discount}% OFF)
+            </span>
+          </p>
+        </div>
+        <div className="flex flex-col justify-between items-end w-[80%] gap-7">
+          <button
+            onClick={handleAddToCart}
+            className="primaryButton flex justify-center items-center gap-1 text-[12px] font-normal text-[#FFFFFF] py-2 px-3"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="17"
+              height="17"
+              viewBox="0 0 17 17"
+              fill="none"
+            >
+              <path
+                d="M13.8334 5.78265C13.8205 5.61488 13.7446 5.45822 13.6209 5.34409C13.4973 5.22997 13.335 5.16682 13.1668 5.16732H11.1668V4.50065C11.1668 3.79341 10.8858 3.11513 10.3857 2.61503C9.88561 2.11494 9.20734 1.83398 8.50009 1.83398C7.79285 1.83398 7.11457 2.11494 6.61447 2.61503C6.11438 3.11513 5.83343 3.79341 5.83343 4.50065V5.16732H3.83343C3.66516 5.16682 3.50293 5.22997 3.37928 5.34409C3.25563 5.45822 3.17971 5.61488 3.16676 5.78265L2.55743 13.7313C2.54328 13.9145 2.56715 14.0987 2.62754 14.2722C2.68792 14.4457 2.78353 14.6049 2.90835 14.7398C3.03317 14.8746 3.18452 14.9822 3.35289 15.0558C3.52126 15.1293 3.70302 15.1673 3.88676 15.1673H13.1134C13.2971 15.1673 13.4788 15.1293 13.6471 15.0558C13.8154 14.9823 13.9668 14.8747 14.0916 14.74C14.2164 14.6052 14.312 14.4461 14.3724 14.2727C14.4329 14.0992 14.4568 13.9151 14.4428 13.732L13.8334 5.78265ZM7.16676 7.83398C7.16676 8.0108 7.09652 8.18036 6.9715 8.30539C6.84647 8.43041 6.6769 8.50065 6.50009 8.50065C6.32328 8.50065 6.15371 8.43041 6.02869 8.30539C5.90366 8.18036 5.83343 8.0108 5.83343 7.83398V6.50065H7.16676V7.83398ZM7.16676 4.50065C7.16676 4.14703 7.30723 3.80789 7.55728 3.55784C7.80733 3.30779 8.14647 3.16732 8.50009 3.16732C8.85371 3.16732 9.19285 3.30779 9.4429 3.55784C9.69295 3.80789 9.83343 4.14703 9.83343 4.50065V5.16732H7.16676V4.50065ZM11.1668 7.83398C11.1668 8.0108 11.0965 8.18036 10.9715 8.30539C10.8465 8.43041 10.6769 8.50065 10.5001 8.50065C10.3233 8.50065 10.1537 8.43041 10.0287 8.30539C9.90366 8.18036 9.83343 8.0108 9.83343 7.83398V6.50065H11.1668V7.83398Z"
+                fill="white"
+              />
+            </svg>
+            {AddToBag}
+          </button>
+          <p className="text-sm font-semibold text-[#D4D4D4] flex items-center">
+            <span className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="17"
+                viewBox="0 0 16 17"
+                fill="none"
+              >
+                <g clipPath="url(#clip0_14081_30621)">
+                  <path
+                    d="M10.8679 0.5L4 9.56641H6.87891L4.51514 16.5L11.7413 7.48244H8.75337L10.8679 0.5Z"
+                    fill="url(#paint0_linear_14081_30621)"
+                  />
+                </g>
+                <defs>
+                  <linearGradient
+                    id="paint0_linear_14081_30621"
+                    x1="3.70226"
+                    y1="10.7128"
+                    x2="12.0019"
+                    y2="10.7134"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stopColor="#F43F5E" />
+                    <stop offset="1" stopColor="#FB923C" />
+                  </linearGradient>
+                  <clipPath id="clip0_14081_30621">
+                    <rect
+                      width="16"
+                      height="16"
+                      fill="white"
+                      transform="translate(0 0.5)"
+                    />
+                  </clipPath>
+                </defs>
+              </svg>
+            </span>
+            {rating} ({reviews})
+          </p>
+          <Link
+            href={`/Checkout/${id}`}
+            className="w-full text-center px-[30px] py-2 gymBookBtn text-[14px] leading-[21px] font-medium text-[#FFF] rounded-lg border-[1px] border-[#F43F5E]"
+          >
+            {buttonText}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
+```
+
+## Usage
+
+Import and use the component in your project:
+
+```jsx
+import ProductCard from "@your-path/product-card";
+
+export default function Example() {
+  return (
+     <ProductCard
+        id={"1234"}
+        imageUrl="/images/product.jpg"
+        label={"Best Seller"}
+        name={"Adjustable Dumbbell set"}
+        description={"product description"}
+        price={7999}
+        discounted_price={product.priceOff}
+        discount={0}
+        AddToBag={"Add To Bag"}
+        rating={4.1}
+        reviews={18}
+        buttonText={"Buy Now"}
+        isLiked={false}
+        category={"Cardio"}
+        size={"XL"}
+        variantId={"var123"}
+    />
+  );
+}
+```

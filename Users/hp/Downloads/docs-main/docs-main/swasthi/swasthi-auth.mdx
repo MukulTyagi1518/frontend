@@ -1,0 +1,211 @@
+---
+title: 'Firebase Authentication Guide'
+description: 'Complete guide for implementing Firebase Authentication in Flutter with Google and Apple Sign-in'
+---
+
+# Initial Setup
+
+## Dependencies
+
+Add these dependencies to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  google_sign_in: ^6.1.6
+  the_apple_sign_in: ^1.1.1
+  provider: ^6.1.1
+  fpdart: ^1.1.0
+```
+
+## Firebase Project Setup
+
+1. Create a new Firebase project in the Firebase Console
+2. Add your Flutter application:
+```bash
+flutterfire configure
+```
+
+For detailed setup instructions, visit the [Firebase documentation](https://firebase.google.com/docs/flutter/setup).
+
+# Project Configuration
+
+## Initialize Firebase
+
+Add the following to your `main.dart`:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
+```
+
+## Platform-Specific Setup
+
+<CodeGroup>
+```groovy Android
+// android/app/build.gradle
+dependencies {
+  implementation platform('com.google.firebase:firebase-bom:32.7.0')
+  implementation 'com.google.firebase:firebase-auth'
+}
+```
+
+```xml iOS
+<!-- ios/Runner/Info.plist -->
+<!-- Google Sign-in -->
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.YOUR-CLIENT-ID</string>
+    </array>
+  </dict>
+</array>
+
+<!-- Apple Sign-in -->
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>your.bundle.id</string>
+    </array>
+  </dict>
+</array>
+```
+</CodeGroup>
+
+# Authentication Implementation
+
+## Auth Repository
+
+The `AuthRepository` class handles the core authentication logic:
+
+```dart
+abstract class BaseAuth {
+  TaskEither<String, User?> signInWithGoogle();
+  Future<void> signOut();
+}
+
+class AuthRepository implements BaseAuth {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+}
+```
+
+### Key Components
+- `FirebaseAuth` instance for Firebase authentication
+- `GoogleSignIn` for Google authentication
+- `TaskEither` for functional error handling
+
+## Auth Provider
+
+The `AuthProvider` manages authentication state:
+
+```dart
+class AuthProvider with ChangeNotifier {
+  final AuthRepository _authRepository;
+  final AccountRepository _accountRepository;
+  ApiStatus _googleLoginStatus = ApiStatus.Success;
+  
+  AuthProvider(this._authRepository, this._accountRepository);
+}
+```
+
+# Sign-in Methods
+
+## Google Sign-in Implementation
+
+```dart
+// In AuthRepository
+TaskEither<String, User?> signInWithGoogle() {
+  return TaskEither.tryCatch(
+    () async {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
+      
+      final GoogleSignInAuthentication googleAuth = 
+        await googleUser.authentication;
+        
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      final UserCredential userCredential = 
+        await _firebaseAuth.signInWithCredential(credential);
+        
+      return userCredential.user;
+    },
+    (error, stackTrace) => 'Error signing in with Google: $error',
+  );
+}
+
+// In AuthProvider
+Future<void> googleLogin() async {
+  _googleLoginStatus = ApiStatus.Loading;
+  notifyListeners();
+  
+  final result = await _authRepository.signInWithGoogle().run();
+  result.match(
+    (error) => handleError(error),
+    (user) async {
+      if (user != null) {
+        await handleSuccessfulLogin(user);
+      }
+    },
+  );
+  
+  _googleLoginStatus = ApiStatus.Success;
+  notifyListeners();
+}
+```
+
+# State Management
+
+The `AuthProvider` manages authentication state using `ChangeNotifier`:
+
+```dart
+void updateLoginStatus(ApiStatus status) {
+  _googleLoginStatus = status;
+  notifyListeners();
+}
+
+void logOut() {
+  _authRepository.signOut();
+  _googleLoginStatus = ApiStatus.Success;
+  notifyListeners();
+  // Clear other provider states
+  clearProviderStates();
+}
+```
+
+# Navigation
+
+Handle navigation after authentication:
+
+```dart
+void handleSuccessfulLogin(User user) async {
+  final isCompleteResult = 
+    await _accountRepository.isAccountComplete(user.uid).run();
+  
+  isCompleteResult.match(
+    (error) => handleError(error),
+    (isComplete) {
+      if (isComplete) {
+        DeviceService().context.go('/');
+      } else {
+        DeviceService().context.go('/on_board');
+      }
+    },
+  );
+}
+```

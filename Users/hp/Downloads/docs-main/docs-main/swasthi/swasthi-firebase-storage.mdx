@@ -1,0 +1,36 @@
+---
+title: 'Firebase Storage Structure'
+description: 'Guide to Firebase Storage folder structure and usage patterns for the Flutter application'
+---
+
+# Storage Structure
+
+## User Images
+
+### Directory
+```plaintext
+/user_images/
+```
+
+### Purpose
+This folder is dedicated to storing user-uploaded images, primarily:
+- Profile pictures
+- User-related images
+- Account-specific media
+
+### Naming Convention
+Files follow a structured naming pattern:
+```plaintext
+user_images/<uid>.<extension>
+```
+
+For example:
+```plaintext
+user_images/12345.jpg
+```
+
+### Implementation Details
+- Each image is stored with a unique filename
+- Filenames incorporate the user's unique identifier (UID)
+- File extensions are preserved from the original upload
+- Structure enables efficient retrieval and management

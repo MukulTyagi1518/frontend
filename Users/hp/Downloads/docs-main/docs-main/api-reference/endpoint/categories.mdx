@@ -1,0 +1,89 @@
+---
+title: 'Categories'
+api: 'GET /api/fitnearn/web/categories/:name'
+description: 'Get activities under a specific category'
+---
+
+# Categories
+
+## Get Category Activities
+
+Retrieve a list of activities and their MET values for a specific category.
+
+### Path Parameters
+
+<ParamField path="name" type="string" required>
+  The name of the category to retrieve activities for (e.g., "Sports Activities")
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of activity objects
+  <Expandable title="Activity Object">
+    <ResponseField name="name" type="string">
+      The name of the activity
+    </ResponseField>
+    <ResponseField name="metValue" type="number">
+      The Metabolic Equivalent of Task (MET) value for the activity
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request GET \
+  --url 'https://api.example.com/api/fitnearn/web/categories/Sports%20Activities'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "success": true,
+  "data": [
+    {
+      "name": "Cardio",
+      "metValue": 5.4
+    },
+    {
+      "name": "Yoga",
+      "metValue": 6.5
+    }
+  ]
+}
+```
+
+```json Category Not Found Response
+{
+  "success": false,
+  "message": "Category not found"
+}
+```
+
+```json Server Error Response
+{
+  "success": false,
+  "message": "An unexpected error occurred"
+}
+```
+</ResponseExample>
+
+## Error Codes
+
+| Status Code | Description                                                   |
+|------------|---------------------------------------------------------------|
+| 200        | Successfully retrieved activities for the specified category   |
+| 404        | Category not found                                            |
+| 500        | Internal server error - Something went wrong on the server    |
+
+## Notes
+
+- Category names are case-sensitive
+- MET values are standardized measurements of energy expenditure
+- Activities are sorted alphabetically by name
+- Empty categories will return an empty data array with a success status

@@ -1,0 +1,135 @@
+---
+title: "Setting up Next.js with TypeScript, Tailwind CSS, and shadcn/ui"
+description: "A comprehensive guide to creating a Next.js project with essential tools and components"
+---
+
+# Setting up Next.js with TypeScript, Tailwind CSS, and shadcn/ui
+
+This guide will walk you through the process of creating a Next.js project with TypeScript, Tailwind CSS, and shadcn/ui components pre-installed.
+
+## Use existing template
+
+<a
+  target="__blank"
+  href="https://github.com/Fit-earn-meditate/frontend-template"
+  className="text-blue-500 underline"
+>
+  FrontEnd Template ↗️
+</a>
+
+OR
+
+<Steps>
+  <Step title="Create a new Next.js project">
+    Run the following command in your terminal:
+
+    ```bash
+    npx create-next-app@latest
+    ```
+
+  </Step>
+
+  <Step title="Configure your project">
+    You'll be prompted with several questions. Here are the recommended answers:
+
+    <Accordion title="Project Configuration Questions">
+      ```plaintext
+      What is your project named? my-app
+      Would you like to use TypeScript? Yes
+      Would you like to use ESLint? Yes
+      Would you like to use Tailwind CSS? Yes
+      Would you like to use `src/` directory? No
+      Would you like to use App Router? (recommended) Yes
+      Would you like to customize the default import alias? No
+      ```
+    </Accordion>
+
+    This will create a new Next.js project with TypeScript and Tailwind CSS already integrated.
+
+  </Step>
+  <img src="/images/front-end-template-commands.png" style={{ borderRadius: '0.5rem' }} />
+  <Step title="Navigate to your project directory">
+    Change to your newly created project directory:
+
+    ```bash
+    cd my-app
+    ```
+
+  </Step>
+
+  <Step title="Install shadcn/ui">
+    Install shadcn/ui by running the following command:
+
+    ```bash
+    npx shadcn@latest init
+    ```
+
+  </Step>
+
+  <Step title="Configure shadcn/ui">
+    You'll be asked a series of questions to configure shadcn/ui. Here are the recommended answers:
+
+    <Accordion title="shadcn/ui Configuration Questions">
+      ```plaintext
+     ✔ How would you like to proceed? » Use --force
+
+✔ Installing dependencies.
+✔ Would you like to use CSS variables for theming? ... no / yes
+✔ Writing components.json.
+✔ Checking registry.
+✔ Updating tailwind.config.ts
+✔ Updating src\app\globals.css
+✔ How would you like to proceed? » Use --force
+
+````
+</Accordion>
+
+  </Step>
+
+  <Step title="Add shadcn/ui components">
+    Now you can start adding shadcn/ui components. For example, to add a button component:
+
+    ```bash
+    npx shadcn@latest add button
+    ```
+
+  </Step>
+
+
+ <Step title="Add shadcn/ui components">
+You can use the  components in your pages. For example, to add a button component to a page:
+    ```bash
+    import { Button } from "@/components/ui/button"
+
+    export function ButtonDemo() {
+      return <Button> Button </Button>
+}
+    ```
+
+  </Step>
+
+
+
+  <Step title="Start your development server">
+    Finally, you can start your development server:
+
+    ```bash
+    npm run dev
+    ```
+
+  </Step>
+</Steps>
+
+## Next Steps
+
+Your Next.js project is now set up with TypeScript, Tailwind CSS, and shadcn/ui components ready to use. You can start building your application by creating new pages in the `app` directory and importing shadcn/ui components as needed.
+Explore More Features
+Here are some additional steps to further enhance your project:
+
+<Accordion title="Adding Global Styling with Tailwind CSS"> Customize your `tailwind.config.js` file to add themes, extend styles, or configure plugins to suit your needs. For example, you can add custom colors or extend font families: ```js module.exports = { theme: { extend: { colors: { primary: '#1d4ed8', }, fontFamily: { sans: ['Inter', 'sans-serif'], }, }, }, plugins: [], } ``` </Accordion> <Accordion title="Optimizing Your Project"> - Enable **Prettier** from VS code extenstions for consistent formatting across your project. - Configure ESLint rules to maintain code quality. - Set up **environment variables** for secure API integration. </Accordion>
+## Conclusion
+Congratulations! You've successfully set up a Next.js project with TypeScript, Tailwind CSS, and shadcn/ui. You're now ready to start building your application with a modern, scalable, and customizable tech stack.
+
+Feel free to experiment with shadcn/ui components and Tailwind CSS to build beautiful, responsive user interfaces. Happy coding!
+
+````

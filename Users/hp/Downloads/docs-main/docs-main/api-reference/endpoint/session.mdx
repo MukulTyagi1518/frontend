@@ -1,0 +1,80 @@
+---
+title: 'Session Management'
+api: 'GET /api/fitnearn/web/users/check-session-validity'
+description: 'Check the validity of a user session token'
+---
+
+# Session Management
+
+## Check Session Validity
+
+Verify if a user's session token is valid and active.
+
+### Query Parameters
+
+<ParamField query="token" type="string" required>
+  The JWT token to be checked for validity. This token should be obtained during the authentication process.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A descriptive message about the session status
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request GET \
+  --url 'https://api.example.com/api/fitnearn/web/users/check-session-validity?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "success": true,
+  "message": "Session is valid"
+}
+```
+
+```json Invalid Token Response
+{
+  "success": false,
+  "message": "Token is required and must be a string"
+}
+```
+
+```json Expired Session Response
+{
+  "success": false,
+  "message": "Session is invalid or expired"
+}
+```
+
+```json Server Error Response
+{
+  "success": false,
+  "message": "Internal server error"
+}
+```
+</ResponseExample>
+
+## Error Codes
+
+| Status Code | Description                                                                |
+|------------|----------------------------------------------------------------------------|
+| 200        | Session is valid                                                           |
+| 400        | Invalid token input - Token is missing or in incorrect format              |
+| 401        | Session is invalid or expired                                              |
+| 500        | Internal server error - Something went wrong on the server                 |
+
+## Notes
+
+- The token should be a valid JWT token obtained during login
+- Tokens have a limited lifetime and will expire after a certain period
+- This endpoint can be used to validate sessions before making authenticated requests
+- If the session is invalid, the client should redirect to the login page

@@ -1,0 +1,152 @@
+<Accordion type="single" collapsible>
+  <AccordionItem value="prod-deployment">
+    <AccordionTrigger>PROD Deployment Steps</AccordionTrigger>
+    <AccordionContent>
+      <ul>
+        <li>Develop the code according to the design.</li>
+        <li>Create a feature branch for each update.</li>
+        <li>Push updated code to the feature branch.</li>
+        <li>
+          Merge with the team into a new branch, then PR to <code>dev</code>.
+        </li>
+        <li>
+          Check the Jenkins pipeline <code>fitnearn_web_FE</code> for console
+          errors.
+        </li>
+        <li>
+          Access the EC2 VM:{" "}
+          <code>/var/lib/jenkins/workspace/fitnearn_web_FE</code>. Ensure the
+          code matches the <code>dev</code> branch.
+        </li>
+        <li>
+          Update the <code>.env.prod</code> file:
+          <ul>
+            <li>
+              If missing, create it manually: <code>sudo nano .env.prod</code>.
+            </li>
+          </ul>
+        </li>
+        <li>
+          Restart the app using PM2:
+          <ul>
+            <li>
+              <code>pm2 restart &lt;PID&gt;</code>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Verify changes on <code>fitnearn.com</code>.
+        </li>
+      </ul>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+### Notes
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="deployment-notes">
+    <AccordionTrigger>Important Notes</AccordionTrigger>
+    <AccordionContent>
+      <ul>
+        <li>
+          <strong>GitHub Access via EC2:</strong>
+          <ul>
+            <li>
+              Generate a Personal Access Token (classic) in GitHub settings.
+            </li>
+            <li>
+              Set the repository URL on EC2:
+              <pre>
+                git remote set-url origin
+                https://&lt;your-github-username&gt;:&lt;your-personal-access-token&gt;@github.com/&lt;your-github-username&gt;/&lt;repository-name&gt;.git
+              </pre>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <strong>Handling CPU Efficiency:</strong>
+          <ul>
+            <li>Use swap memory for resource-intensive tasks:</li>
+            <pre>
+              sudo fallocate -l 2G /swapfile sudo chmod 600 /swapfile sudo
+              mkswap /swapfile sudo swapon /swapfile echo '/swapfile none swap
+              sw 0 0' | sudo tee -a /etc/fstab
+            </pre>
+            <li>
+              Verify swap memory: <code>free -h</code>.
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Version Control and Code Merge Practices
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="version-control">
+    <AccordionTrigger>Version Control Workflow</AccordionTrigger>
+    <AccordionContent>
+      <ul>
+        <li>
+          Create a feature branch:{" "}
+          <code>git checkout -b feature/&lt;feature-name&gt;</code>.
+        </li>
+        <li>
+          Pull updates from <code>dev</code> to avoid conflicts:
+          <code>git pull origin dev</code>.
+        </li>
+        <li>
+          Commit and push changes:
+          <pre>
+            git add . git commit -m "Implemented new feature" git push origin
+            feature/&lt;feature-name&gt;
+          </pre>
+        </li>
+        <li>
+          Create a Pull Request to merge into <code>dev</code>.
+        </li>
+        <li>Collaborate on feedback and merge.</li>
+      </ul>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Back-End Deployment
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="backend-deployment">
+    <AccordionTrigger>Back-End Deployment Workflow</AccordionTrigger>
+    <AccordionContent>
+      <ul>
+        <li>
+          Create a feature branch: <code>JIRA-1234-FeatureName</code>.
+        </li>
+        <li>
+          Sync with the <code>development</code> branch:
+          <code>git pull origin development</code>.
+        </li>
+        <li>Install Serverless dependencies:</li>
+        <pre>
+          npm i serverless --save-dev npm i serverless-offline --save-dev
+          --force
+        </pre>
+        <li>
+          Log in to Serverless: <code>npx serverless login</code>.
+        </li>
+        <li>
+          Update and test <code>serverless.yml</code> locally.
+        </li>
+        <li>
+          Verify APIs: <code>http://localhost:3000/dev/{api}</code>.
+        </li>
+        <li>
+          Push and create a PR to merge into <code>development</code>.
+        </li>
+        <li>Post-deployment, debug Lambda errors using CloudWatch Logs.</li>
+      </ul>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>

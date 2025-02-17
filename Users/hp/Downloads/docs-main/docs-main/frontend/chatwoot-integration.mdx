@@ -1,0 +1,148 @@
+# Chatwoot Integration Guide
+
+## Prerequisites
+
+- A free Chatwoot account.
+
+## Implementation
+
+### Step 1: Sign Up or Log In to Chatwoot
+- Visit [Chatwoot](https://chatwoot.com/) and sign up or log in to your account.
+
+### Step 2: Set Up Chatwoot Account
+1. Go to **Settings** > **Inboxes** > **Add Inbox**.
+2. Select **Website** as the inbox type.
+3. Fill in the necessary fields, such as:
+   - Site name
+   - Domain
+   - Welcome message
+   - Other required fields
+4. Add an agent or select your Chatwoot ID.
+
+### Step 3: Get the Integration Script
+
+Once the inbox is created, you will receive a unique script for that inbox. An example script looks like this:
+
+```html
+<script>
+  window.chatwootSettings = {"position":"right","type":"standard","launcherTitle":"Chat with us"};
+  (function(d, t) {
+    var BASE_URL = "https://app.chatwoot.com";
+    var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    g.src = BASE_URL + "/packs/js/sdk.js";
+    g.defer = true;
+    g.async = true;
+    s.parentNode.insertBefore(g, s);
+    g.onload = function() {
+      window.chatwootSDK.run({
+        websiteToken: 'YOUR_WEBSITE_TOKEN',
+        baseUrl: BASE_URL
+      });
+    };
+  })(document, "script");
+</script>
+```
+
+> **Note:** Each inbox has a unique script and website token. Make sure to use the correct script for each inbox.
+
+### Step 4: Modify the Script for Next.js
+
+In Next.js, you need to modify the script to integrate it correctly. Add the following modified script to your `layout.tsx` file:
+
+```jsx
+<Script
+  id="chatwoot-script"
+  strategy="afterInteractive"
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function(d, t) {
+        var BASE_URL = "https://app.chatwoot.com";
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+        g.onload = function() {
+          window.chatwootSDK.run({
+            websiteToken: 'YOUR_WEBSITE_TOKEN',
+            baseUrl: BASE_URL
+          });
+        };
+      })(document, "script");
+    `,
+  }}
+/>
+```
+
+### Step 5: Hide Chatwoot Bubble on Specific Pages
+
+If you don't want the Chatwoot bubble to appear on certain pages (e.g., login or signup pages), you can create a client component to handle this. Here's an example:
+
+```jsx
+"use client";
+
+import Script from "next/script";
+import { usePathname } from "next/navigation";
+
+export default function Chatwoot() {
+  const pathname = usePathname();
+
+  // List of paths where Chatwoot should NOT appear
+  const noChatwootPages = ["/login", "/signup"];
+
+  if (noChatwootPages.includes(pathname)) return null;
+
+  return (
+    <Script
+      id="chatwoot-script"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function(d, t) {
+            var BASE_URL = "https://app.chatwoot.com";
+            var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            g.src = BASE_URL + "/packs/js/sdk.js";
+            g.defer = true;
+            g.async = true;
+            s.parentNode.insertBefore(g, s);
+            g.onload = function() {
+              window.chatwootSDK.run({
+                websiteToken: 'YOUR_WEBSITE_TOKEN',
+                baseUrl: BASE_URL
+              });
+            };
+          })(document, "script");
+        `,
+      }}
+    />
+  );
+}
+```
+
+### Step 6: Import the Component
+
+Import the `Chatwoot` component in your `layout.tsx` file and include it in the body tag:
+
+```jsx
+import Chatwoot from "@/components/Chatwoot";
+
+export default function Layout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Chatwoot />
+      </body>
+    </html>
+  );
+}
+```
+
+### Additional Features
+
+Chatwoot offers various features that you can explore, such as:
+- **Canned Responses**: Predefined replies for quick responses.
+- **Campaigns**: Targeted messaging to your visitors.
+- **Custom Widgets**: Customize the appearance and behavior of the chat widget.
+
+Visit the [Chatwoot Documentation](https://www.chatwoot.com/docs) for more information.

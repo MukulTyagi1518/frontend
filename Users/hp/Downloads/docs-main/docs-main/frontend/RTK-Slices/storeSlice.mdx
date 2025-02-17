@@ -1,0 +1,179 @@
+---
+title: "Cart Slice"
+description: "A step-by-step guide on how to use the Cart Slice in your project. you can use this slice if you are using Nextjs or Reactjs with Typescript and already setted up the Redux Tool Kit (RTK) in your project. it has these actions => add to cart, remove from cart, update quantity, increase quantity, decrease quantity, clear cart."
+---
+
+## Installation
+
+To use the Cart slice, install the required dependencies:
+
+```bash
+npm install @reduxjs/toolkit react-redux 
+```
+
+## Setting Up the Redux Store with cart slice
+
+Import and configure the cart slice in your Redux store:
+
+```tsx
+import { configureStore } from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
+import cartReducer from "./cartSlice";
+
+export const store = configureStore({
+  reducer: {
+    cart: cartReducer,
+  },
+  // Default middleware includes thunk by default
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      thunk: true,
+    }),
+});
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+// Custom hook to use typed dispatch
+export const useAppDispatch: () => AppDispatch = useDispatch;
+
+export default store;
+
+```
+
+## Make a Slice
+
+make a slice file cartSlice.ts and paste the below code:
+
+```jsx
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CartItem, CartState } from "./types";
+
+const initialState: CartState = {
+  cartItems: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("cart") || "[]") : [],
+  status: "idle",
+  error: null,
+};
+
+const cartSlice = createSlice({
+  name: 'cart',
+  initialState,
+  reducers: {
+    addToCart: (state, action: PayloadAction<CartItem>) => {
+      const existingItem = state.cartItems.find((item) => item.id === action.payload.id);
+      if (existingItem) {
+        existingItem.quantity += action.payload.quantity;
+      } else {
+        if (action.payload.quantity > 0) {
+          state.cartItems.push({ ...action.payload });
+        } else {
+          state.cartItems.push({ ...action.payload, quantity: 1 });
+        }
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cart", JSON.stringify(state.cartItems));
+      }
+    },
+    removeFromCart: (state, action: PayloadAction<string>) => {
+      state.cartItems = state.cartItems.filter((item) => item.id !== action.payload);
+      if (typeof window !== "undefined") {
+        localStorage.setItem('cart', JSON.stringify(state.cartItems));
+      }
+    },
+    increaseQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
+      const item = state.cartItems.find((product) => product.id === action.payload.id);
+      if (item) {
+        item.quantity = action.payload.quantity;
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cart", JSON.stringify(state.cartItems));
+      }
+    },
+    decreaseQuantity: (state, action: PayloadAction<string>) => {
+      const item = state.cartItems.find((product) => product.id === action.payload);
+      if (item && item.quantity > 1) item.quantity -= 1;
+      if (typeof window !== "undefined") {
+        localStorage.setItem('cart', JSON.stringify(state.cartItems));
+      }
+    },
+    updateQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
+      const item = state.cartItems.find((product) => product.id === action.payload.id);
+      if (item) {
+        item.quantity = action.payload.quantity;
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem('cart', JSON.stringify(state.cartItems));
+      }
+    },    
+    clearCart: (state) => {
+      state.cartItems = [];
+      if (typeof window !== "undefined") {
+        localStorage.removeItem('cart');
+      }
+    },
+  },
+});
+
+export const { addToCart, removeFromCart, increaseQuantity, decreaseQuantity, updateQuantity, clearCart } = cartSlice.actions;
+export default cartSlice.reducer;
+```
+
+## Type file
+
+Make a type file for type validations:
+
+```jsx
+export interface Product {
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+    category: string;
+    size: string;
+    discountRate: number;
+    priceOff: number;
+    variantId: string;
+  }
+  
+  export interface CartItem extends Product {
+    quantity: number;
+  }
+  
+  export interface CartState {
+    cartItems: CartItem[];
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | null;
+  }
+  
+```
+
+
+## Using the Cart Slice in a Component
+
+Import the necessary functions and hooks:
+
+```tsx
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, removeFromCart } from "./cartSlice";
+
+export default function ProductCard({ product }) {
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.cartItems);
+
+  return (
+    <div>
+      <h2>{product.title}</h2>
+      <p>{product.price}</p>
+      <button onClick={() => dispatch(addToCart(product))}>Add to Cart</button>
+      <button onClick={() => dispatch(removeFromCart(product.id))}>Remove from Cart</button>
+    </div>
+  );
+}
+```
+
+## Summary
+- Use `addToCart(product)` to add a product to the cart.
+- Use `removeFromCart(product.id)` to remove a product from the cart.
+- Ensure the Redux store is properly set up with the cart slice.
+```

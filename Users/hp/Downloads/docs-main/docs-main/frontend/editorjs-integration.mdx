@@ -1,0 +1,203 @@
+---
+title: "Editor.js Integration Guide"
+description: "A comprehensive guide to integrating Editor.js into your Next.js application."
+---
+
+# Editor.js Integration Guide
+
+Learn how to integrate **Editor.js**, a modern block-styled editor that outputs clean JSON data, into your Next.js application. It's ideal for content-rich applications like blogs, CMS platforms, and article editors.
+
+---
+
+## Requirements
+
+Before integrating Editor.js, ensure your project setup includes the following:
+
+<AccordionGroup>
+  <Accordion title="Next.js Setup">
+    - Ensure you have a working Next.js project initialized.  
+    - Use a package manager like `npm` or `yarn` to install dependencies.
+  </Accordion>
+  <Accordion title="Styling">
+    - Tailwind CSS is recommended for styling, but you can also use CSS modules or global styles.
+  </Accordion>
+  <Accordion title="Backend API">
+    - If using tools like ImageTool for file uploads, set up a backend endpoint for file handling.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Integration Steps
+
+Follow these steps to integrate Editor.js into your Next.js application:
+
+<Steps>
+  <Step title="Install Editor.js and Plugins">
+    Install the core Editor.js package and any additional tools or plugins:
+
+    ```bash
+    npm install @editorjs/editorjs
+    ```
+
+    For tools like headers, lists, or images:
+
+    ```bash
+    npm install @editorjs/header @editorjs/list @editorjs/image
+    ```
+  </Step>
+
+  <Step title="Create an Editor.js Component">
+    Create a reusable component for Editor.js in your `components` directory:
+
+    ```tsx file="components/Editor.js"
+    "use client";
+    import React, { useRef, useEffect } from "react";
+    import EditorJS from "@editorjs/editorjs";
+    import Header from "@editorjs/header";
+    import List from "@editorjs/list";
+    import ImageTool from "@editorjs/image";
+
+    const Editor = ({ data }) => {
+      const editorRef = useRef(null);
+
+      useEffect(() => {
+        if (!editorRef.current) {
+          editorRef.current = new EditorJS({
+            holder: "editorjs",
+            tools: {
+              header: Header,
+              list: List,
+              image: {
+                class: ImageTool,
+                config: {
+                  endpoints: {
+                    byFile: "/api/uploadFile", // API for file uploads
+                    byUrl: "/api/fetchImage", // API for URL-based images
+                  },
+                },
+              },
+            },
+            data,
+          });
+        }
+
+        return () => {
+          if (editorRef.current) {
+            editorRef.current.destroy();
+            editorRef.current = null;
+          }
+        };
+      }, [data]);
+
+      return <div id="editorjs" />;
+    };
+
+    export default Editor;
+    ```
+  </Step>
+
+  <Step title="Use the Editor Component">
+    Import and use the `Editor` component in your Next.js page:
+
+    ```tsx file="app/page.js"
+    import React from "react";
+    import Editor from "../components/Editor";
+
+    const HomePage = () => {
+      const initialData = {
+        blocks: [
+          {
+            type: "header",
+            data: {
+              text: "Welcome to Editor.js Integration!",
+              level: 2,
+            },
+          },
+        ],
+      };
+
+      return (
+        <div>
+          <h1>Editor.js Example</h1>
+          <Editor data={initialData} />
+        </div>
+      );
+    };
+
+    export default HomePage;
+    ```
+  </Step>
+
+  <Step title="Add Styling for the Editor">
+    Style the editor using global CSS or Tailwind CSS.
+
+    **Global CSS**: Add the following to `styles/globals.css`:
+
+    ```css file="styles/globals.css"
+    #editorjs {
+      background: #fff;
+      min-height: 300px;
+      padding: 10px;
+      border: 1px solid #eaeaea;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+    }
+    ```
+
+    **Tailwind CSS**: Use this block:
+
+    ```html
+    <div id="editorjs" className="bg-white min-h-[300px] p-4 border border-gray-300 rounded-md"></div>
+    ```
+  </Step>
+
+  <Step title="Set Up File Upload API">
+    If using `ImageTool`, create an API route in Next.js for file uploads:
+
+    ```javascript file="app/api/uploadFile.js"
+    import formidable from "formidable";
+    import fs from "fs";
+
+    export const config = {
+      api: {
+        bodyParser: false,
+      },
+    };
+
+    export default async function handler(req, res) {
+      if (req.method === "POST") {
+        const form = new formidable.IncomingForm();
+        form.uploadDir = "./public/uploads";
+        form.keepExtensions = true;
+
+        form.parse(req, (err, fields, files) => {
+          if (err) {
+            return res.status(500).json({ error: "File upload error" });
+          }
+          const filePath = files.file.filepath;
+          const newPath = `./public/uploads/${files.file.originalFilename}`;
+          fs.renameSync(filePath, newPath);
+
+          res.status(200).json({ success: true, fileUrl: `/uploads/${files.file.originalFilename}` });
+        });
+      } else {
+        res.status(405).json({ error: "Method not allowed" });
+      }
+    }
+    ```
+    Ensure the `public/uploads` directory exists and has the correct permissions.
+  </Step>
+</Steps>
+
+---
+
+## Best Practices
+
+- Regularly save Editor.js output to your database for persistence.
+- Customize Editor.js tools to suit your application needs.
+- If building a collaborative editor, consider using Firebase or WebSockets for real-time editing.
+
+---
+
+By following this guide, you can successfully integrate Editor.js into your Next.js application and enhance your content creation capabilities.

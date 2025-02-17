@@ -1,0 +1,150 @@
+---
+title: "Google AdSense Integration Guide"
+description: "A comprehensive guide to integrating Google AdSense into your website"
+---
+
+# Google AdSense Integration Guide
+
+This guide covers the requirements, dependencies, and steps for integrating Google AdSense into your website.
+
+## Requirements
+
+Before integrating Google AdSense, ensure your website meets the following requirements:
+
+<AccordionGroup>
+  <Accordion title="Content Quality">
+    - Website must have original, high-quality content - Content must follow
+    Google's content policies - Website should have at least 20 pages with
+    unique content
+  </Accordion>
+  <Accordion title="Website Structure">
+    - Must comply with Google's guidelines for webmaster quality - Should have a
+    clear navigation structure and be easy to navigate
+  </Accordion>
+  <Accordion title="Legal Requirements">
+    - Must have a privacy policy compliant with Google's requirements - You must
+    own the content rights or have explicit permission to display ads - If using
+    content from other sources, you must have necessary licenses or permissions
+    to monetize
+  </Accordion>
+</AccordionGroup>
+
+## Dependencies
+
+Ensure you have the following in place before proceeding with the integration:
+
+<AccordionGroup>
+  <Accordion title="Google AdSense Account">
+    - Must have a Google AdSense account - Account should comply with Google's
+    AdSense program policies and terms of service
+  </Accordion>
+  <Accordion title="Website Hosting">
+    - Website should be hosted on a reliable server - Server should have a
+    static IP address or a domain name
+  </Accordion>
+  <Accordion title="Website Status">
+    - The site where you want to show ads must be live - Google will review your
+    website and ad implementation for compliance
+  </Accordion>
+</AccordionGroup>
+
+## Integration Steps
+
+Follow these steps to implement Google AdSense on your web page:
+
+<Steps>
+  <Step title="Sign up for Google AdSense">
+    1. Visit the [Google AdSense website](https://www.google.com/adsense)
+    2. Sign in with your Google account or create a new one
+    3. Follow the instructions to set up your AdSense account and website
+  </Step>
+  <Step title="Create an Ad Unit">
+    1. Navigate to the "Ads" section in your AdSense account
+    2. Click on "By ad unit" and then "Create ad unit"
+    3. Choose the ad format (e.g., display ads, in-feed ads, or in-article ads)
+    4. Select the ad size and type (e.g., responsive, fixed size)
+    5. Add an ad unit name
+    6. Select how you want the ad to be displayed on the website (e.g., square)
+    7. Click on "Create" to generate the ad code
+    8. Copy the provided ad code
+  <Frame>
+  <img src="/images/adsense-1.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  <Frame>
+  <img src="/images/adsense-2.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  </Step>
+  <Step title="Add the Ad Code to Your Website">
+    Create a new component in your React application to handle the AdSense integration:
+
+
+    ```tsx file="AdComponent.tsx"
+    "use client"
+    import { useEffect } from 'react';
+    import Script from 'next/script';
+
+    const AdComponent = () => {
+      useEffect(() => {
+        // Ensure adsbygoogle is defined before pushing ads
+        if (typeof window !== 'undefined') {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        }
+      }, []);
+
+      return (
+        <div style={{ width: '100%' }}>
+          {/* Load the Google AdSense script */}
+          <Script
+            id="adsense-script"
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5790706176905444"
+            strategy="afterInteractive"
+          />
+
+          {/* AdSense ad block */}
+          <ins className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-5790706176905444"
+            data-ad-slot="6877428522"
+            data-ad-format="auto"
+            data-full-width-responsive="true"></ins>
+        </div>
+      );
+    };
+
+    export default AdComponent;
+    ```
+
+
+
+    Add this component to the pages where you want to display ads.
+
+  </Step>
+  
+  <Step title="Add Your Site to AdSense">
+    1. In your AdSense account, add the site where you want to show ads
+    2. Verify site ownership by following one of their provided methods
+    3. Add the verification code to your site's `<head>` tag
+    4. Select "I have placed the code" and verify your site ownership
+  </Step>
+  <Step title="Submit for Review">
+    1. After adding the ad code and library to your website, submit your website for review in the AdSense account
+    2. Google will review your website and ad implementation to ensure compliance with their policies
+    3. Once approved, the ads will start displaying on your web page
+      <Frame>
+  <img src="/images/adsense-3.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  </Step>
+</Steps>
+
+## Best Practices
+
+To ensure a smooth integration and maintain compliance with Google's policies:
+
+- Regularly review and update your content to maintain quality
+- Monitor your ad performance and placement for optimal results
+- Stay informed about changes to Google's AdSense policies
+- Ensure your privacy policy remains up-to-date and compliant
+- Test your ads on various devices and browsers to ensure proper display
+
+By following this guide and adhering to Google's requirements, you can successfully integrate Google AdSense into your website and start monetizing your content.

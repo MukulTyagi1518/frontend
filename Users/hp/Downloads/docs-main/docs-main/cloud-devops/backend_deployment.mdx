@@ -1,0 +1,167 @@
+---
+title: "Backend Deployment Process and Guidelines"
+description: "A comprehensive guide covering prerequisite knowledge, branching strategies, development workflow, and deployment procedures."
+---
+
+import { Image } from "@/components/Image";
+
+## Prerequisite Knowledge
+
+### Required Skills
+
+1. **GIT Commands**
+
+   - Proficiency in creating branches
+   - Understanding of code pushing mechanisms
+   - Knowledge of branch merging procedures
+
+2. **Serverless Framework**
+
+   - Configuration expertise
+   - API deployment experience
+
+3. **API Logic Development**
+   - Efficient code structuring
+   - Logic implementation skills
+
+## Branching and Collaboration Guidelines
+
+### Feature Branch Workflow
+
+1. **Branch Creation**
+
+   - Create separate branches for each feature/fix
+   - Follow naming convention: `JIRA-1234-FeatureName`
+   - Ensures traceability for debugging and contributor identification
+
+2. **Development Branch Synchronization**
+   ```bash
+   git pull origin development
+   ```
+   - Regular syncing ensures up-to-date codebase
+   - Minimizes merge conflicts
+
+## Development Workflow
+
+### Initial Setup
+
+1. **Install Development Dependencies**
+
+   ```bash
+   npm i serverless --save-dev
+   npm i serverless-offline --save-dev --force
+   npx serverless login
+   ```
+
+2. **Serverless Configuration (One-time Setup)**
+   ```bash
+   serverless login
+   ```
+   - Update organization and app name in `serverless.yml`
+   - Add required plugins:
+     ```yaml
+     plugins:
+       - serverless-offline
+     ```
+
+### Development Process
+
+1. **Code Building**
+
+   ```bash
+   npm run build
+   ```
+
+2. **Local Testing**
+
+   - Test APIs at `http://localhost:3000/dev/{api}`
+   - Verify all endpoints in serverless-offline environment
+   - **Note**: Local testing is crucial for AWS Lambda deployment success
+
+3. **Code Synchronization**
+   - Pull latest changes from development branch
+   - Rebuild and retest after synchronization
+
+## Post-Deployment Procedures
+
+### Deployment Verification
+
+1. **Error Monitoring**
+
+   - Check CloudWatch Logs for issues
+   - Monitor Lambda function performance
+
+2. **Code Push and Merge**
+   ```bash
+   git push origin feature-branch-name
+   ```
+   - Create pull request for development branch merge
+
+### Git Configuration
+
+1. **Environment File Management**
+   - Add `.env` to `.gitignore`
+   - Clear cache after updates:
+     `bash
+git rm -r --cached .
+git add .
+git commit -m "Updated .gitignore to exclude .env"
+`
+     <img
+       src="/images/Backend_Deployment1.png"
+       alt="Backend Workflow Diagram"
+       width="230"
+       height="230"
+       className="mt-4 rounded-lg"
+     />
+
+## Error Handling and Debugging
+
+### CloudWatch Logs
+
+1. Access AWS Management Console
+2. Navigate to CloudWatch section
+3. Select function for log review
+4. Analyze errors, warnings, and compilation issues
+
+## Key Notes
+
+### Package Management
+
+- Monitor package sizes
+- Follow size limit guidelines
+
+### Deployment Strategy
+
+1. **Production Deployment**
+
+   - Deploy only from stable development branch
+   - Limit production updates to critical fixes
+
+2. **Environment Guidelines**
+   - No direct production branch pushes
+   - Use Hotfix branches for critical bugs
+   - Mandatory local testing before deployment
+
+### Branch Management
+
+1. **Feature Development**
+
+   - Create branch per Jira ticket
+   - Use descriptive branch names
+   - Follow naming convention: `JIRA-ID-FeatureName`
+
+2. **Production Management**
+   - Restricted direct pushes
+   - Hotfix branch requirement
+   - Comprehensive testing protocol
+
+## Best Practices Summary
+
+- Create separate branches for features
+- Regular development branch synchronization
+- Thorough local testing
+- Proper error logging and monitoring
+- Strict production deployment controls
+
+This documentation outlines the complete development lifecycle, from initial setup to production deployment, ensuring consistent and efficient development practices across the team.

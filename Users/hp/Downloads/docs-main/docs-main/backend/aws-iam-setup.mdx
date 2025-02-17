@@ -1,0 +1,130 @@
+---
+title: "Leveraging AWS STS for S3 Video Access"
+description: "A comprehensive guide on using AWS Security Token Service (STS) with Google authentication to access video content stored in Amazon S3 buckets."
+---
+
+# Leveraging AWS STS Web-Identity Role for S3 Video Access
+
+This guide explains how to enable users to securely access video content stored in an Amazon S3 bucket by leveraging their Google authentication credentials. We'll integrate Google authentication with AWS Security Token Service (STS) to allow users to assume an Identity and Access Management (IAM) role, obtaining temporary credentials for S3 bucket access.
+
+## Purpose of the Document
+
+<Accordion title="Document Objective">
+The primary purpose of this document is to:
+- Enable seamless integration of Google authentication with AWS services
+- Facilitate secure access to resources hosted on AWS infrastructure
+- Achieve access control by assuming an IAM role with a Google Identity Token
+- Adhere to security best practices while accessing AWS resources
+</Accordion>
+
+## Prerequisites
+
+<Accordion title="Before You Begin">
+Ensure you have the following:
+- An active AWS account with permissions to create IAM roles and policies
+- Familiarity with AWS Management Console, AWS CLI, or AWS SDKs for programmatic access
+- Access to Google authentication services and the ability to obtain Google Identity Tokens
+- Basic understanding of IAM roles, policies, and security best practices in AWS
+</Accordion>
+
+## Process Overview
+
+<Steps>
+  <Step title="Obtain Google Identity Token">
+    Acquire the Google Identity Token through Firebase using Google Sign-In.
+  </Step>
+  <Step title="Create IAM Role">
+    Create an IAM role with a trust policy allowing assumption by users authenticated via Google Identity Tokens.
+  </Step>
+  <Step title="Assume IAM Role">
+    Use AWS STS to assume the IAM role with the Google Identity Token.
+  </Step>
+  <Step title="Access S3 Bucket">
+    Access the S3 bucket to watch videos using the temporary credentials obtained from assuming the role.
+  </Step>
+</Steps>
+
+## AWS Infrastructure
+
+<Accordion title="S3 Bucket Structure">
+We have a bucket named "videolibrarytest" with two folders:
+- **Free**: Contains videos accessible to registered users with Free Subscription
+- **Premium**: Contains videos restricted to users with Premium Subscription
+</Accordion>
+
+## Step-by-Step Guide
+
+### 1. Obtaining a Google Identity Token
+
+<Accordion title="Google Token Acquisition">
+- Obtain the Google Token from Firebase using Google Sign-In
+- Note: This token expires in 1 hour from generation
+- Solution: Use the Refresh token issued for longer sessions
+</Accordion>
+
+### 2. Steps in AWS
+
+<AccordionGroup>
+  <Accordion title="Create AWS User">
+    1. Create a User in AWS Console
+    2. Create a Group and add this user to the newly created group
+  </Accordion>
+
+  <Accordion title="Create Policy for Premium Users">
+    Create a policy that allows users to:
+    - List the Objects in the Bucket
+    - Get objects from the Bucket
+
+    To edit the Policy:
+    1. Click on "Edit"
+    2. To view the Policy in JSON format, click on "JSON"
+  </Accordion>
+
+  <Accordion title="Attach Policy">
+    Attach the created Policy to the User and User Group who are entitled to use this Policy
+  </Accordion>
+</AccordionGroup>
+
+### 3. Creating an IAM Role
+
+<AccordionGroup>
+  <Accordion title="IAM Role Creation">
+    Create an IAM Role that allows S3 to call AWS services on your behalf
+  </Accordion>
+
+  <Accordion title="Role Configuration">
+    1. Attach user and user Group to this Role
+    2. Setup Identity Providers to include the OpenID connect URL
+  </Accordion>
+
+  <Accordion title="OpenID Connect (OIDC) Information">
+    OIDC is an authentication layer built on top of OAuth 2.0, enabling secure authentication and SSO for web and mobile applications.
+
+    **ID Token**: Contains claims about the user, such as unique identifier and authentication timestamp.
+  </Accordion>
+
+  <Accordion title="Obtaining OIDC URL">
+    1. Decode the Google Token in jwt.io
+    2. The `iss` parameter is the authorized issuer (add as OIDC Provider URL)
+    3. The `aud` parameter is the intended audience
+  </Accordion>
+
+  <Accordion title="Trust Policy Configuration">
+    In the Trust Policy:
+    1. Add the OIDC ARN as Federated Users
+    2. Add the `aud` (audience) who is intended to be authorized using the Google token
+  </Accordion>
+</AccordionGroup>
+
+### 4. Assuming the IAM Role with STS
+
+<Accordion title="Role Assumption Process">
+1. Use `aws-sdk` to assume the Role using its predefined function: `assumeRoleWithWebIdentity`
+2. This function performs STS Verification
+3. STS Verification: Validates the identity token and checks if it matches the specified role's trust policy
+</Accordion>
+
+## Conclusion
+
+By following this guide, you can successfully integrate Google authentication with AWS STS to provide secure, temporary access to your S3 video content. This approach ensures robust security practices while offering a seamless user experience.
+

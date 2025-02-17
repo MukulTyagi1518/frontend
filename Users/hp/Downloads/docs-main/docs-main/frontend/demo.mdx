@@ -1,0 +1,59 @@
+---
+title: "Deployment Checklist for Next.js Applications on VPS"
+description: "A comprehensive checklist for deploying Next.js applications on a DigitalOcean Ubuntu server"
+---
+
+# Deployment Checklist for Next.js Applications on VPS
+
+This checklist ensures thorough preparation, deployment, and monitoring of Next.js applications on a DigitalOcean Ubuntu server.
+
+<Steps>
+  <Step title="Preparation for Deployment">
+    <AccordionGroup>
+      <Accordion title="Code Review and Approval">
+        <Checkbox checked={false}>Ensure all code changes are reviewed and approved.</Checkbox>
+      </Accordion>
+
+      <Accordion title="Merge Changes">
+        <Checkbox checked={false}>Merge changes to the dev branch.</Checkbox>
+        <Checkbox checked={false}>Ensure all checks pass in the CI/CD pipeline.</Checkbox>
+      </Accordion>
+
+      <Accordion title="Prepare Deployment Package">
+        <Checkbox checked={false}>Prepare a deployment package with the latest code changes.</Checkbox>
+      </Accordion>
+    </AccordionGroup>
+  </Step>
+
+  <Step title="Deployment to Production">
+    <AccordionGroup>
+      <Accordion title="Deploy to Production Environment">
+        <Checkbox checked={false}>Deploy the changes to the staging environment.</Checkbox>
+        <Checkbox checked={false}>Change the ENV to the production (i.e., .env.prod).</Checkbox>
+        <Checkbox checked={false}>Update the env variables as per the production.</Checkbox>
+      </Accordion>
+
+      <Accordion title="Conduct Thorough Testing">
+        <Checkbox checked={false}>Perform thorough testing in staging, including User Acceptance Testing (UAT).</Checkbox>
+        <Checkbox checked={false}>Verify that the fitness level selection feature works as expected.</Checkbox>
+        <Checkbox checked={false}>Ensure error logging is functioning correctly.</Checkbox>
+      </Accordion>
+    </AccordionGroup>
+  </Step>
+</Steps>
+
+## Additional Notes
+
+<Accordion title="Important Reminders">
+  - Always backup the current production environment before deploying new changes.
+  - Keep the team informed about the deployment progress and any issues encountered.
+  - After deployment, monitor the application closely for any unexpected behavior or performance issues.
+</Accordion>
+
+<Accordion title="Rollback Plan">
+  In case of critical issues post-deployment:
+  1. Immediately revert to the last stable version.
+  2. Investigate the root cause of the issues.
+  3. Fix the problems in the development environment.
+  4. Re-deploy after thorough testing and approval.
+</Accordion>

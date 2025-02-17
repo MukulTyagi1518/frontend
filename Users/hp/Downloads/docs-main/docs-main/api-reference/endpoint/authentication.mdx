@@ -1,0 +1,50 @@
+---
+title: 'Authentication'
+api: 'POST /v1/auth/login'
+description: 'Authenticate and get access token'
+---
+
+# Authentication
+
+## Login
+
+<ParamField body="email" type="string" required>
+  The email address of the user
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The password of the user
+</ParamField>
+
+### Response
+
+<ResponseField name="token" type="string">
+  The JWT token for authentication
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request POST \
+  --url https://api.example.com/v1/auth/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "123",
+      "email": "user@example.com"
+    }
+  }
+}
+```
+</ResponseExample>

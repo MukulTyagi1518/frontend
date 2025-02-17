@@ -1,0 +1,134 @@
+---
+title: "Adding shadcn Components in Next.js"
+description: "Learn how to install and use shadcn button, input box, and dropdown components in your Next.js project"
+---
+
+# Installing shadcn Components in Next.js
+
+This guide will walk you through the process of installing and using shadcn button, input box, and dropdown components in your Next.js project.
+
+## Installation
+
+First, you need to install the necessary dependencies and set up your project to use shadcn components.
+
+<Steps>
+
+
+  <Step title="Initialize shadcn">
+    Run the shadcn CLI to initialize your project:
+
+    ```bash
+    npx shadcn@latest init
+    ```
+
+    Follow the prompts to set up your project. Choose your preferred style and color scheme.
+
+  </Step>
+
+  <Step title="Install components">
+    Use the shadcn CLI to add the button, input, and select components:
+
+    ```bash
+    npx shadcn@latest add button
+    npx shadcn@latest add input
+    npx shadcn@latest add select
+    ```
+
+  </Step>
+</Steps>
+
+## Using the Components
+
+Now that you've installed the components, let's see how to use them in your Next.js project.
+
+### Button Component
+
+<Frame>
+  <div className="flex gap-4 p-4 bg--100 rounded-lg">
+    <button className="px-4 py-2 border bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+      Default Button
+    </button>
+    <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
+      Secondary Button
+    </button>
+  </div>
+</Frame>
+
+Here's how to use the Button component:
+
+```jsx
+import { Button } from "@/components/ui/button";
+
+export default function ButtonExample() {
+  return (
+    <div>
+      <Button>Default Button</Button>
+      <Button variant="secondary">Secondary Button</Button>
+    </div>
+  );
+}
+```
+
+### Input Component
+
+<Frame>
+  <div className="p-4  rounded-lg">
+    <input
+      type="text"
+      placeholder="Enter your name"
+      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+</Frame>
+Here's how to use the Input compon
+
+```jsx
+import { Input } from "@/components/ui/input";
+
+export default function InputExample() {
+  return <Input type="text" placeholder="Enter your name" />;
+}
+```
+
+### Select (Dropdown) Component
+
+<Frame>
+  <div className="p-4 bg-gray-100 rounded-lg">
+    <div className="w-[200px]">
+      <Select>
+        <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Select an option
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="option1">Option 1</SelectItem>
+          <SelectItem value="option2">Option 2</SelectItem>
+          <SelectItem value="option3">Option 3</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+</Frame>
+
+Here's how to use the Select component:
+
+```jsx
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+export default function SelectExample() {
+  return (
+    <Select>
+      <SelectTrigger className="w-[200px]">Select an option</SelectTrigger>
+      <SelectContent>
+        <SelectItem value="option1">Option 1</SelectItem>
+        <SelectItem value="option2">Option 2</SelectItem>
+        <SelectItem value="option3">Option 3</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+```

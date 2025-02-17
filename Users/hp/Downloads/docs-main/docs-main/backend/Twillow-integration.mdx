@@ -1,0 +1,97 @@
+---
+title: "Twillo Integration"
+description: "Twillo SMS and Email configuration"
+---
+
+# Guide to Twillo Integration
+
+Twilio provides reliable messaging, enabling businesses to reach customers around the globe. As one of the world's most widely-used, trusted, and accessible communication tools, empowers you to send and receive SMS, MMS, WhatsApp messages, and more at scale.
+
+## service of Architecture (SOA)
+
+<Frame>
+  <img src="/images/twillow-1.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+Before integrating Google AdSense, ensure your website meets the following requirements:
+
+<AccordionGroup>
+  <Accordion title="Twilio API">
+    - 
+The "Twilio API" serves as the entry point for developers to interact with Twilio's services.
+
+  </Accordion>
+  <Accordion title="Messaging Services">
+    - The "Messaging Services" category encompasses various communication channels such as SMS, voice, email, and chat.
+
+  </Accordion>
+  <Accordion title=" External APIs">
+    - Each specific service (SMS, Voice, Email, Chat) interacts with external APIs or databases as needed to send or receive messages, manage contacts, or retrieve information.
+
+  </Accordion>
+  <Accordion title="Third-party services">
+    -External APIs represent third-party services or systems that Twilio may integrate with, such as social media platforms or payment gateways.
+
+  </Accordion>
+  <Accordion title="Data storage systems">
+    - The "Database" represents Twilio's internal data storage systems for managing user data, message logs, and other information.
+
+  </Accordion>
+</AccordionGroup>
+
+## Integration Steps
+
+Follow these steps to integration on your web page:
+Configuring Twilio SMS-feature with Node JS
+
+<Steps>
+  <Step title="Create account">
+  1.Create a Twilio account and save Auth Token and Account SID
+2.Save the SID and Token as environment variables o
+<Frame>
+  <img src="/images/twillow-2.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  </Step>
+  <Step title="Create an service">
+Create a Service under Verify section
+
+  <Frame>
+  <img src="/images/twillow-3.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  
+  </Step>
+  <Step title="Send OTP">
+1.Send-OTP sms using Node JS
+
+2.install npm module: npm install twilio
+
+<Frame>
+  <img src="/images/twillow-4.png" style={{ borderRadius: "0.5rem" }} />
+</Frame>
+
+  </Step>
+  
+  <Step title="Verify OTP">
+  <Frame>
+  <img src="/images/twillow-5.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+ Send Email:
+<Frame>
+  <img src="/images/twillow-6.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+  </Step>
+  <Step title="Send email template">
+  Sending template-email 
+To enable template email create an account on sendGrid and under dynamic templates create a template and edit it as per needs placing necessary placeholders
+      <Frame>
+    <img src="/images/twillow-7.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+ <Frame>
+    <img src="/images/twillow-8.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+the message is filled with dynamic contents declared in params like name, email, password.
+
+  </Step>
+</Steps>
+
+By following this guide and adhering to requirements, you can successfully integrate Twillo into your website.

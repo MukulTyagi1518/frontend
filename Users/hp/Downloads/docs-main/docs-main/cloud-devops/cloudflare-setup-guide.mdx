@@ -1,0 +1,131 @@
+---
+title: 'Cloudflare Setup guide'
+description: 'A comprehensive guide to setting up and configuring Cloudflare for your web application'
+---
+
+# Cloudflare Setup and Configuration Guide
+
+## Cloudflare Overview
+
+Cloudflare is a web performance and security company that operates a global content delivery network (CDN) and provides various services to protect and accelerate websites and applications. It acts as a reverse proxy between your web servers and the internet, optimizing and securing traffic flow.
+
+<AccordionGroup>
+  <Accordion title="Key Features and Services">
+    - Content Delivery Network (CDN)
+    - DDoS Protection
+    - Web Application Firewall (WAF)
+    - SSL/TLS Encryption
+    - DNS Services
+    - Caching and Optimization
+    - Security Headers and Policies
+    - Analytics and Reporting
+    - Serverless Computing (Cloudflare Workers)
+  </Accordion>
+  <Accordion title="How Cloudflare Works">
+    1. User requests access to a Cloudflare-protected website
+    2. Request goes through Cloudflare's global network of data centers
+    3. Cloudflare inspects the request, applying security rules and optimizations
+    4. If the request passes checks, it's forwarded to the origin web server
+    5. The response is cached (if applicable) and sent back to the user through Cloudflare's network
+  </Accordion>
+</AccordionGroup>
+
+## Setting up Cloudflare
+
+<Steps>
+  <Step title="Create a Cloudflare Account">
+    1. Visit https://dash.cloudflare.com/sign-up
+    2. Click on "Create Account"
+    3. Enter your email address and create a strong password
+  </Step>
+  <Step title="Add Your Website">
+    1. Enter your website or domain name (e.g., asclasses.online)
+    2. Cloudflare will scan your domain and detect existing DNS records
+    3. Select the "Free Website" plan for essential security features
+  </Step>
+  <Step title="Transfer DNS Management to Cloudflare">
+    1. Log in to your Hostinger account and navigate to the DNS management section
+    2. Note existing DNS records (A, CNAME, MX, etc.)
+    3. In Cloudflare dashboard, go to "DNS" section and click "Add Record"
+    4. Recreate each existing Hostinger record in Cloudflare
+    5. In Hostinger, change nameservers to Cloudflare's nameservers
+  </Step>
+</Steps>
+
+## Configuring Cloudflare
+
+### Enabling SSL/TLS
+
+<Steps>
+  <Step title="Access SSL/TLS Settings">
+    1. In Cloudflare dashboard, go to "SSL/TLS" section
+    2. Select the "Overview" tab
+  </Step>
+  <Step title="Choose SSL/TLS Encryption Mode">
+    - **Flexible SSL**: Encryption between Cloudflare and visitors only
+    - **Full SSL**: End-to-end encryption (requires SSL certificates on your servers)
+  </Step>
+</Steps>
+
+### Updating Nginx Configuration (Optional)
+
+If you've chosen "Full SSL" with Cloudflare:
+
+<Steps>
+  <Step title="Obtain Cloudflare SSL Certificates">
+    1. In Cloudflare dashboard, go to "SSL/TLS" > "Origin Server"
+    2. Download or view the SSL certificate and private key
+  </Step>
+  <Step title="Update Nginx Configuration">
+    1. Update Nginx config files on frontend and backend servers
+    2. Replace existing SSL certificate and private key paths with Cloudflare's
+    3. Restart Nginx on both servers
+  </Step>
+</Steps>
+
+### Enabling DDoS Protection
+
+<Steps>
+  <Step title="Access Security Settings">
+    1. In Cloudflare dashboard, go to "Security" > "Overview"
+  </Step>
+  <Step title="Enable DDoS Protection">
+    1. Scroll to "DDoS Protection" section
+    2. Toggle the switch to enable DDoS Protection
+  </Step>
+</Steps>
+
+### Additional Security Settings
+
+Explore these additional security features in the Cloudflare dashboard:
+
+<AccordionGroup>
+  <Accordion title="Web Application Firewall (WAF)">
+    Protects against common web vulnerabilities like SQL injection and XSS attacks.
+  </Accordion>
+  <Accordion title="Browser Integrity Check">
+    Ensures incoming requests are from legitimate web browsers.
+  </Accordion>
+  <Accordion title="Hotlink Protection">
+    Prevents unauthorized direct linking to your website's resources.
+  </Accordion>
+  <Accordion title="IP Access Rules">
+    Create rules to allow or block specific IP addresses or ranges.
+  </Accordion>
+  <Accordion title="Firewall Rules">
+    Define custom rules to filter incoming traffic based on various criteria.
+  </Accordion>
+  <Accordion title="Rate Limiting Rules">
+    Protect against abuse by limiting requests from specific sources.
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+1. Regularly review and update your Cloudflare settings to ensure optimal security and performance.
+2. Use Cloudflare's analytics to monitor traffic patterns and security events.
+3. Keep your origin server's software and configurations up to date.
+4. Implement additional security measures on your origin server, such as firewalls and intrusion detection systems.
+5. Regularly backup your Cloudflare configuration and DNS records.
+
+By following this guide, you'll have a solid foundation for using Cloudflare to protect and optimize your web application. Remember to continually monitor and adjust your settings as your needs evolve.

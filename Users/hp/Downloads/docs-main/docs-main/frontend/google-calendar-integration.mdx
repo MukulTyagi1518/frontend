@@ -1,0 +1,292 @@
+---
+title: 'Google Calendar with Cognito'
+description: 'A comprehensive guide to retrieving Google tokens through Cognito and using them with the Google Calendar API'
+---
+
+# Google Token Integration with AWS Cognito and Calendar API
+
+This guide covers the process of retrieving Google tokens through AWS Cognito after authentication and using them to schedule meetings via the Google Calendar API.
+
+## Retrieving Google Tokens from Cognito
+
+First, let's set up the process to retrieve Google tokens from Cognito after user authentication.
+
+<Steps>
+  <Step title="Install Dependencies">
+    Install the necessary AWS SDK client for Cognito:
+    ```bash
+    npm install @aws-sdk/client-cognito-identity-provider
+    ```
+  </Step>
+  <Step title="Set Up Cognito Client">
+    Create a function to handle the authentication and token retrieval:
+
+    ```typescript
+    import { CognitoIdentityProviderClient, GetUserCommand, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+
+    async function getGoogleTokensFromCognito(username: string, password: string) {
+      const client = new CognitoIdentityProviderClient({ region: "YOUR_AWS_REGION" });
+
+      // Step 1: Authenticate user with Cognito
+      const authParams = {
+        AuthFlow: "USER_PASSWORD_AUTH",
+        ClientId: "YOUR_COGNITO_APP_CLIENT_ID",
+        UserPoolId: "YOUR_COGNITO_USER_POOL_ID",
+        AuthParameters: {
+          USERNAME: username,
+          PASSWORD: password,
+        },
+      };
+
+      try {
+        const authCommand = new InitiateAuthCommand(authParams);
+        const authResponse = await client.send(authCommand);
+
+        if (!authResponse.AuthenticationResult) {
+          throw new Error("Authentication failed");
+        }
+
+        const idToken = authResponse.AuthenticationResult.IdToken;
+
+        // Step 2: Get user attributes including Google tokens
+        const getUserParams = {
+          AccessToken: authResponse.AuthenticationResult.AccessToken,
+        };
+
+        const getUserCommand = new GetUserCommand(getUserParams);
+        const userResponse = await client.send(getUserCommand);
+
+        // Step 3: Extract Google tokens from user attributes
+        const googleAccessToken = userResponse.UserAttributes?.find(
+          (attr) => attr.Name === "custom:google_access_token"
+        )?.Value;
+
+        const googleRefreshToken = userResponse.UserAttributes?.find(
+          (attr) => attr.Name === "custom:google_refresh_token"
+        )?.Value;
+
+        return {
+          idToken,
+          googleAccessToken,
+          googleRefreshToken,
+        };
+      } catch (error) {
+        console.error("Error retrieving tokens:", error);
+        throw error;
+      }
+    }
+
+    // Usage
+    getGoogleTokensFromCognito("user@example.com", "password")
+      .then((tokens) => console.log("Tokens:", tokens))
+      .catch((error) => console.error("Error:", error));
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Important Notes">
+  - Replace "YOUR_AWS_REGION", "YOUR_COGNITO_APP_CLIENT_ID", and "YOUR_COGNITO_USER_POOL_ID" with your actual values.
+  - Ensure you have the necessary permissions set up in your IAM role to access Cognito.
+  - This code assumes you've already set up your Cognito User Pool to store Google tokens as custom attributes.
+</Accordion>
+
+## Configuring Cognito User Pool for Google Tokens
+
+To store Google tokens as custom attributes in your Cognito User Pool, you need to set up a Lambda function as a post-authentication trigger.
+
+<Steps>
+  <Step title="Configure Custom Attributes">
+    1. Go to the AWS Cognito console and select your User Pool.
+    2. Navigate to "Attributes" in the left sidebar.
+    3. Under "Custom Attributes", add two new attributes:
+       - Name: google_access_token, Type: String
+       - Name: google_refresh_token, Type: String
+    4. Ensure "Mutable" is checked for both attributes.
+  </Step>
+  <Step title="Create Lambda Function">
+    Create a new Lambda function with the following code:
+
+    ```javascript
+    exports.handler = async (event, context) => {
+      // Ensure this is a post-authentication event
+      if (event.triggerSource !== "PostAuthentication_Authentication") {
+        return event;
+      }
+
+      // Extract Google tokens from the event
+      const googleAccessToken = event.request.userAttributes['custom:google_access_token'];
+      const googleRefreshToken = event.request.userAttributes['custom:google_refresh_token'];
+
+      // If tokens are not present, no action needed
+      if (!googleAccessToken && !googleRefreshToken) {
+        console.log('No Google tokens found. Skipping update.');
+        return event;
+      }
+
+      // Prepare update attributes
+      const updateAttributes = [];
+      if (googleAccessToken) {
+        updateAttributes.push({
+          Name: 'custom:google_access_token',
+          Value: googleAccessToken
+        });
+      }
+      if (googleRefreshToken) {
+        updateAttributes.push({
+          Name: 'custom:google_refresh_token',
+          Value: googleRefreshToken
+        });
+      }
+
+      // Update user attributes
+      const params = {
+        UserPoolId: event.userPoolId,
+        UserAttributes: updateAttributes,
+        Username: event.userName
+      };
+
+      try {
+        const AWS = require('aws-sdk');
+        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider();
+        await cognitoIdentityServiceProvider.adminUpdateUserAttributes(params).promise();
+        console.log('User attributes updated successfully');
+      } catch (error) {
+        console.error('Error updating user attributes:', error);
+        throw error;
+      }
+
+      return event;
+    };
+    ```
+  </Step>
+  <Step title="Set Up IAM Permissions">
+    Add the following policy to your Lambda function's execution role:
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "cognito-idp:AdminUpdateUserAttributes"
+                ],
+                "Resource": "arn:aws:cognito-idp:REGION:ACCOUNT_ID:userpool/USER_POOL_ID"
+            }
+        ]
+    }
+    ```
+    Replace REGION, ACCOUNT_ID, and USER_POOL_ID with your actual values.
+  </Step>
+  <Step title="Configure Cognito Trigger">
+    1. In the Cognito User Pool console, go to "Triggers" in the left sidebar.
+    2. Find "Post authentication" and select your Lambda function.
+  </Step>
+  <Step title="Update Authentication Flow">
+    When authenticating with Google, ensure you're requesting the necessary scopes (profile, email, openid, https://www.googleapis.com/auth/calendar.events).
+    After receiving the Google tokens, pass them to Cognito during the authentication process.
+  </Step>
+  <Step title="Test the Setup">
+    1. Authenticate a user through your application.
+    2. Check the CloudWatch logs for your Lambda function to ensure it's being triggered and updating attributes successfully.
+    3. Use the Cognito API or console to verify that the user's attributes are being updated with the Google tokens.
+  </Step>
+</Steps>
+
+## Scheduling a Meeting Using Google Calendar API
+
+Once you have successfully retrieved the Google tokens, you can use them to schedule a meeting using the Google Calendar API.
+
+<Steps>
+  <Step title="Install Dependencies">
+    Install the Google APIs library:
+    ```bash
+    npm install googleapis
+    ```
+  </Step>
+  <Step title="Create Scheduling Function">
+    Use the following code to create a function for scheduling meetings:
+
+    ```typescript
+    import { google } from 'googleapis';
+
+    async function scheduleMeeting(
+      googleAccessToken: string,
+      summary: string,
+      description: string,
+      startDateTime: string,
+      endDateTime: string,
+      attendees: string[]
+    ) {
+      const calendar = google.calendar({ version: 'v3', auth: googleAccessToken });
+
+      const event = {
+        summary,
+        description,
+        start: {
+          dateTime: startDateTime,
+          timeZone: 'America/New_York', // Adjust as needed
+        },
+        end: {
+          dateTime: endDateTime,
+          timeZone: 'America/New_York', // Adjust as needed
+        },
+        attendees: attendees.map(email => ({ email })),
+        conferenceData: {
+          createRequest: {
+            requestId: `meet-${Date.now()}`,
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
+      };
+
+      try {
+        const response = await calendar.events.insert({
+          calendarId: 'primary',
+          conferenceDataVersion: 1,
+          requestBody: event,
+        });
+
+        console.log('Meeting scheduled successfully');
+        console.log('Event details:', response.data);
+        console.log('Meet link:', response.data.hangoutLink);
+
+        return response.data;
+      } catch (error) {
+        console.error('Error scheduling meeting:', error);
+        throw error;
+      }
+    }
+
+    // Usage
+    const googleAccessToken = 'YOUR_GOOGLE_ACCESS_TOKEN';
+    scheduleMeeting(
+      googleAccessToken,
+      'Team Meeting',
+      'Weekly sync-up',
+      '2023-06-01T09:00:00-04:00',
+      '2023-06-01T10:00:00-04:00',
+      ['team@example.com']
+    )
+      .then(eventData => console.log('Event created:', eventData))
+      .catch(error => console.error('Error:', error));
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Important Notes">
+  - Replace 'YOUR_GOOGLE_ACCESS_TOKEN' with the actual Google access token you retrieved from Cognito.
+  - Adjust the meeting details (summary, description, date/time, attendees) as needed.
+  - The function will return the created event data, including the Google Meet link.
+  - Remember to handle token refresh when the access token expires. You may need to implement a token refresh mechanism using the refresh token you obtained earlier.
+</Accordion>
+
+## Conclusion
+
+This guide has walked you through the process of:
+1. Authenticating a user through Cognito
+2. Retrieving their Google tokens
+3. Storing Google tokens as custom attributes in Cognito
+4. Using these tokens to create a Calendar event with an associated Google Meet link
+
+By following these steps, you can create a seamless integration between your application, AWS Cognito, and Google Calendar API.

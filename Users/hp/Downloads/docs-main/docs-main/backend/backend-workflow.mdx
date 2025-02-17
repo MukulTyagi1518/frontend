@@ -1,0 +1,161 @@
+---
+title: "Backend Workflow - Feature Branch to Development Workflow"
+description: "A comprehensive guide for deploying feature branches to the development environment, including setup, development, testing, and deployment strategies."
+---
+
+import { Image } from "@/components/Image";
+
+## Table of Contents
+
+1. [Phase 1: Requirement Analysis and Initial Setup](#phase-1-requirement-analysis-and-initial-setup)
+2. [Phase 2: Development](#phase-2-development)
+3. [Phase 3: Testing and Deployment](#phase-3-testing-and-deployment)
+4. [Phase 4: Production Deployment](#phase-4-production-deployment)
+5. [Phase 5: Deployment Strategy](#phase-5-deployment-strategy)
+6. [Important Notes](#important-notes)
+
+## Phase 1: Requirement Analysis and Initial Setup
+
+### Requirement Analysis
+
+1. Identify tasks on the Project Board
+2. Review and understand requirements
+3. Collaborate with designers or leads for clarifications
+
+### Document Requirements
+
+1. Create a detailed requirements document
+2. Draft an initial system design in tools like Figma
+3. Use comments to clarify design aspects with the team
+
+### System Architecture Design
+
+1. Develop user flows concurrently with requirement gathering
+2. Design system architecture based on functionalities
+3. Align with frontend developers for API discussions
+
+## Phase 2: Development
+
+### Local Development Setup
+
+1. Pull the latest code from the development branch:
+
+```bash
+git pull origin development
+```
+
+2. Configure your local environment based on the `.env.sample` file
+
+### REST API Development
+
+1. Implement and test REST API endpoints locally
+2. Push the code to a new feature branch:
+
+```bash
+git checkout -b feature/branch-name
+git add .
+git commit -m "Commit Message"
+git push origin feature/branch-name
+```
+
+### Code Merge Practices
+
+1. Sync feature branch with development regularly:
+
+```bash
+git pull origin development
+```
+
+2. Ensure only necessary files are added for commit
+3. Exclude cached sensitive files like `.env`:
+
+```bash
+git rm -r --cached .env
+```
+
+4. Raise a Pull Request (PR) for the feature branch to merge into development
+
+## Phase 3: Testing and Deployment
+
+### API Deployment
+
+1. Deploy API to the development server
+2. Use hosted API URLs for testing:
+
+```
+https://example-api.dev-url.com/
+```
+
+3. Monitor and debug through AWS CloudWatch logs
+
+### Swagger Documentation
+
+1. Align APIs with the Swagger documentation format
+2. Update the `paths` tag in the Swagger file for documentation
+
+## Phase 4: Production Deployment
+
+### Production Release Steps
+
+1. Create a stable feature branch for production:
+
+```bash
+git checkout -b feature/stable-branch
+git add .
+git commit -m "Production Release"
+git push origin feature/stable-branch
+```
+
+2. Set up necessary production resources like S3 buckets and IAM roles
+3. Validate the production environment configurations
+
+## Phase 5: Deployment Strategy
+
+### Deployment Guidelines
+
+1. Ensure stability before merging to production
+2. Focus on deploying critical fixes and priority features
+3. Conduct comprehensive reviews before release
+
+## Important Notes
+
+### Package Management Best Practices
+
+- Always add `.env` files to `.gitignore`
+- When installing new packages:
+  - Check for specific use-case compact packages instead of full packages
+  - Example: Use `@aws-sdk/client-s3` instead of `aws-sdk` for S3 operations
+- To check package size before installation:
+  ```bash
+  npm view "@aws-sdk/client-s3"
+  # or
+  npm info "@aws-sdk/client-s3"
+  ```
+  This will show detailed package information including unpacked size
+
+### Serverless Deployment Constraints
+
+- **Deployment Package Size Limits**:
+  - Direct upload to Lambda: Maximum 50 MB (ZIP file)
+  - Upload via Amazon S3: Maximum 250 MB
+- **Memory Allocation**:
+  - Range: 128 MB to 10,240 MB
+  - Note: Memory allocation affects CPU and network bandwidth
+  - Higher memory = Better performance for larger files
+
+### Development Environment Setup
+
+- Open Terminal in VS Code via View > Terminal
+- Navigate to project directory:
+  ```bash
+  cd path/to/your/project
+  ```
+- Monitor package sizes and dependencies regularly
+
+<img
+  src="/images/Backend_workflow1.png"
+  alt="Backend Workflow Diagram"
+  width="230"
+  height="230"
+  className="mt-4 rounded-lg"
+/>

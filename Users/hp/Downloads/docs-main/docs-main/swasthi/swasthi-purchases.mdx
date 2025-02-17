@@ -1,0 +1,239 @@
+---
+title: Implementing In-App Purchases
+description: Comprehensive guide to setting up in-app purchases using Flutter, Google Play Console, and Node.js server
+---
+
+# In-App Purchases Implementation Guide
+
+## Overview
+
+This guide provides a comprehensive walkthrough for implementing in-app purchases in a Flutter application, covering:
+- Flutter client-side setup
+- Google Play Console configuration
+- Server-side purchase verification
+
+## Prerequisites
+
+- Flutter project
+- Google Play Developer account
+- Basic understanding of Flutter and Node.js
+
+## Step 1: Add Dependencies
+
+<CodeGroup>
+```yaml pubspec.yaml
+dependencies:
+  in_app_purchase: ^4.2.0
+```
+
+```bash Terminal
+flutter pub get
+```
+</CodeGroup>
+
+## Step 2: Android Configuration
+
+Update your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
+
+## Step 3: Google Play Console Setup
+
+<Steps>
+1. Log in to Google Play Console
+2. Navigate to Monetize > Products > In-app products
+3. Click "Create Product"
+4. Select product type (consumable/non-consumable)
+5. Enter product details
+   - Product ID
+   - Title
+   - Description
+6. Set pricing
+7. Publish or upload internal test release
+</Steps>
+
+## Step 4: Initialize In-App Purchases
+
+```dart
+final InAppPurchase iap = InAppPurchase.instance;
+```
+
+## Step 5: Fetch Products
+
+```dart
+void loadProducts() async {
+  Set<String> productIds = {
+    "per_month_subscription", 
+    "per_quarter_subscription", 
+    "per_year_subscription"
+  };
+  
+  final bool isAvailable = await iap.isAvailable();
+  if (isAvailable) {
+    final ProductDetailsResponse response = 
+      await iap.queryProductDetails(productIds.toSet());
+    _products = response.productDetails;
+    notifyListeners();
+  }
+}
+```
+
+## Step 6: Initiate Purchase
+
+```dart
+void buyProduct(String productId, Plans plan) async {
+  _createSubscriptionStatus = ApiStatus.Loading;
+  notifyListeners();
+  
+  final result = await _repository
+    .hasActiveSubscription(uid: FirebaseAuth.instance.currentUser!.uid)
+    .run();
+  
+  result.fold(
+    (failed) {
+      _plan = plan;
+      notifyListeners();
+      var product = getProduct(productId);
+      purchaseProduct(product);
+    },
+    (hasSubscription) {
+      if (hasSubscription) {
+        DeviceService().showSnackBar("You already have an active subscription");
+      } else {
+        _plan = plan;
+        notifyListeners();
+        var product = getProduct(productId);
+        purchaseProduct(product);
+      }
+    }
+  );
+}
+```
+
+## Step 7: Listen for Purchase Updates
+
+```dart
+Stream<List<PurchaseDetails>> purchaseUpdated = iap.purchaseStream;
+purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
+  _processPurchaseUpdates(purchaseDetailsList);
+});
+```
+
+## Step 8: Process Purchase Updates
+
+```dart
+void _processPurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
+  for (PurchaseDetails purchaseDetails in purchaseDetailsList) {
+    if (purchaseDetails.status == PurchaseStatus.purchased) {
+      // Verify the purchase on the server
+      _verifyPurchase(purchaseDetails);
+    }
+  }
+}
+```
+
+## Server-Side Purchase Verification
+
+### Google Cloud Console Setup
+
+<Steps>
+1. Create a new project
+   - Login in to the [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing project.
+2. Enable Google Play Developer API
+   - In your project, go to APIs & Services > Library.
+   - Search for Google Play Developer API and click Enable.
+
+3. Create Service Account
+   - Navigate to APIs & Services > Credentials
+   - Click "Create Credentials"
+   - Select "Service Account"
+   - Provide a name and description for the service account.
+   - Assign the role Editor or Owner for now (you can restrict permissions later)
+   - After creating the service account, download the JSON key file by clicking the Manage Keys option and adding a new key.
+4. Download JSON key file
+5. Grant access in Google Play Console
+   - Open the [Google Play Console](https://play.google.com/console/).
+   - Navigate to Users and permissions > Invite new users.
+   - Click Grant Access, add the service account email, and assign the Finance Role.
+
+</Steps>
+
+### Node.js Server Implementation
+
+<CodeGroup>
+```bash Install Dependencies
+npm install express googleapis
+```
+
+```javascript Server Verification Endpoint
+import express from "express";
+import { google } from "googleapis";
+import admin from './firebase/config.js';
+import { verifyAuth } from './middleware/verifyAuth.js';
+import { v4 as uuidv4 } from 'uuid';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const PACKAGE_NAME = "fit.swasthi.app";
+
+app.post("/api/v1/verify/purchase", verifyAuth, async (req, res) => {
+  try {
+    const { 
+      productId, 
+      token, 
+      plan, 
+      paymentCurrency, 
+      paymentCurrencySymbol, 
+      paymentAmount 
+    } = req.body;
+    const uid = req.uid;
+
+    const auth = new google.auth.GoogleAuth({
+      scopes: ["https://www.googleapis.com/auth/androidpublisher"],
+      keyFile: "./google-credentials.json",
+    });
+
+    // Verification logic continues...
+  } catch (error) {
+    return res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message 
+    });
+  }
+});
+```
+</CodeGroup>
+
+## Best Practices
+
+<Warning>Implement robust purchase verification to prevent fraudulent transactions.</Warning>
+
+- Always verify purchases on the server
+- Handle different purchase states
+- Implement proper error handling
+- Secure your server endpoints
+- Validate subscription status before granting access
+
+## Troubleshooting
+
+<Tip>Common issues often relate to incorrect configuration or missing permissions.</Tip>
+
+- Verify Google Play Console product configuration
+- Check service account permissions
+- Ensure correct package name
+- Test with test accounts
+- Monitor server logs
+
+## Next Steps
+
+- Implement purchase restoration
+- Add subscription management UI
+- Create comprehensive error handling
+- Set up analytics for purchases
+
+## Conclusion
+
+Implementing in-app purchases requires careful configuration across Flutter, Google Play Console, and your backend server. Follow these steps carefully and always prioritize security and user experience.

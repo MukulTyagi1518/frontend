@@ -1,0 +1,60 @@
+---
+title: 'Users'
+api: 'GET /v1/users'
+description: 'User management endpoints'
+---
+
+# Users API
+
+## Get Users List
+
+Get a paginated list of users.
+
+### Query Parameters
+
+<ParamField query="page" type="number">
+  Page number for pagination
+</ParamField>
+
+<ParamField query="limit" type="number">
+  Number of items per page
+</ParamField>
+
+### Response
+
+<ResponseField name="users" type="array">
+  Array of user objects
+</ResponseField>
+
+<RequestExample>
+```bash Example Request
+curl --request GET \
+  --url 'https://api.example.com/v1/users?page=1&limit=10' \
+  --header 'Authorization: Bearer YOUR_TOKEN'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "data": {
+    "users": [
+      {
+        "id": "123",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "meta": {
+    "pagination": {
+      "total": 100,
+      "page": 1,
+      "per_page": 10
+    }
+  }
+}
+```
+</ResponseExample>

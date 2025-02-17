@@ -1,0 +1,151 @@
+---
+title: 'Google Meet No. of Participant'
+description: 'A comprehensive guide to retrieving participants and creating conferences using the Google Meet API'
+---
+
+# Google Meet API Integration Guide
+
+This guide covers how to retrieve the number of participants during a classroom meet and create conferences using the Google Meet API.
+
+## Retrieving Participants
+
+The Google Meet API allows you to retrieve user participants while the meeting is in progress using the `ListParticipantsRequest` method.
+
+<Steps>
+  <Step title="Install Dependencies">
+    First, install the necessary Google Cloud Meet client library:
+    ```bash
+    npm install @google-cloud/meet
+    ```
+  </Step>
+  <Step title="Import Required Modules">
+    ```javascript
+    const { ConferenceRecordsServiceClient } = require('@google-cloud/meet');
+    ```
+  </Step>
+  <Step title="Create a Function to List Participants">
+    Here's an example of how to use the `ListParticipantsRequest` method to retrieve the list of participants in a meeting:
+
+    ```javascript
+    async function listParticipants(conferenceRecordId) {
+      // Initialize client that will be used to send requests. This client only needs to be created
+      // once, and can be reused for multiple requests. After completing all of your requests, call
+      // the "close" method on the client to safely clean up any remaining background resources.
+      const client = new ConferenceRecordsServiceClient();
+
+      // Build the parent from the conference record ID.
+      const parent = `ConferenceRecordName.of('${conferenceRecordId}')`;
+
+      // Build the request.
+      const request = {
+        parent: parent,
+      };
+
+      // List the participants.
+      const [participants] = await client.listParticipants(request);
+      for (const participant of participants) {
+        console.log(`Participant: ${participant.name}`);
+      }
+
+      // Close the client
+      await client.close();
+    }
+
+    // Usage example:
+    const conferenceRecordId = 'your-conference-record-id';
+    listParticipants(conferenceRecordId);
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Important Notes">
+  - The `conferenceRecordId` is required to retrieve the list of participants. You can obtain this ID using the `ListConferenceRecordsRequest` or `GetConferenceRecordRequest` methods.
+  - The response includes a list of `Participant` objects containing information such as name, email address, and join time.
+  - Remember to close the client after completing all requests to clean up background resources.
+</Accordion>
+
+## Understanding Google Meet API Concepts
+
+When working with the Google Meet API, it's important to understand the following key concepts:
+
+<AccordionGroup>
+  <Accordion title="Service">
+    The "service" in the Google Meet API refers to the overall API service that you interact with to perform various operations related to Google Meet. When you initialize the API client in your application, you're creating an instance of the Google Meet service that allows you to make API requests and access the available resources and methods.
+  </Accordion>
+  <Accordion title="Conference">
+    A "conference" in the Google Meet API represents a video meeting or conference call. It's a resource that contains information about the meeting, such as the meeting ID, participant details, and conferencing properties. You can use the `conferences.create` method to create a new conference, and the `conferences.get` method to retrieve details about an existing conference.
+  </Accordion>
+  <Accordion title="Artifact">
+    An "artifact" in the Google Meet API is a resource that represents a recording, transcript, or other data associated with a conference. It can be considered a byproduct or output of a video meeting. For example, if you record a Google Meet conference, the recording itself would be represented as an artifact resource in the API. You can use the `media.insert` method to create a new artifact (e.g., upload a recording), and the `media.get` method to retrieve an existing artifact.
+  </Accordion>
+</AccordionGroup>
+
+## Creating a Conference
+
+To create a new conference using the Google Meet API, you can use the following code:
+
+<Steps>
+  <Step title="Install Dependencies">
+    First, ensure you have the necessary dependencies installed:
+    ```bash
+    npm install com.google.apps.meet.v2 com.google.protobuf
+    ```
+  </Step>
+  <Step title="Import Required Modules">
+    ```javascript
+    const { Conference, RequestStatus } = require('com.google.apps.meet.v2');
+    const { ConferenceRecordsServiceClient } = require('com.google.apps.meet.v2');
+    const { Timestamp } = require('com.google.protobuf');
+    ```
+  </Step>
+  <Step title="Create a Function to Create a Conference">
+    ```javascript
+    async function createConference(conferenceName, startTime, endTime) {
+      // Initialize client that will be used to send requests. This client only needs to be created
+      // once, and can be reused for multiple requests. After completing all of your requests, call
+      // the "close" method on the client to safely clean up any remaining background resources.
+      const client = await ConferenceRecordsServiceClient.create();
+
+      // Build the conference object.
+      const conference = Conference.newBuilder()
+        .setName(conferenceName)
+        .setStartTime(Timestamp.newBuilder().setSeconds(startTime.getTime() / 1000).build())
+        .setEndTime(Timestamp.newBuilder().setSeconds(endTime.getTime() / 1000).build())
+        .setRequestStatus(RequestStatus.REQUESTED)
+        .build();
+
+      // Build the request.
+      const request = CreateConferenceRequest.newBuilder().setConference(conference).build();
+
+      // Create the conference.
+      const response = await client.createConference(request);
+
+      console.log('Conference created:', response.getName());
+
+      await client.close();
+    }
+
+    // Example usage:
+    const conferenceName = 'your-conference-name';
+    const startTime = new Date();
+    const endTime = new Date(startTime.getTime() + 3600000); // One hour
+    createConference(conferenceName, startTime, endTime);
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Important Notes">
+  - The `createConference` function takes three parameters: `conferenceName`, `startTime`, and `endTime`.
+  - The `startTime` and `endTime` are converted to `Timestamp` objects required by the API.
+  - The conference is created with a `RequestStatus` of `REQUESTED`.
+  - Remember to close the client after creating the conference to clean up resources.
+</Accordion>
+
+## Conclusion
+
+This guide has walked you through the process of:
+1. Retrieving participants from an ongoing Google Meet conference
+2. Understanding key concepts in the Google Meet API
+3. Creating a new conference using the API
+
+By following these steps and using the provided code examples, you can integrate Google Meet functionality into your application, allowing you to manage conferences and retrieve participant information programmatically.

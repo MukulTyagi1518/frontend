@@ -1,0 +1,75 @@
+---
+title: 'Building the Flutter App Bundle'
+description: 'Step-by-step guide for building and testing Android app bundles with Flutter'
+---
+
+# Building the App Bundle
+
+## 1. Prepare Build Environment
+
+Run these commands in sequence to prepare your environment:
+
+```bash
+# Clean the project
+flutter clean
+
+# Get dependencies
+flutter pub get
+
+# Update Gradle wrapper (in android directory)
+cd android
+./gradlew wrapper --gradle-version 7.5.1
+cd ..
+
+# Analyze project for errors
+flutter analyze
+```
+
+## 2. Build Variants
+
+Choose the appropriate build command based on your needs:
+
+<CodeGroup>
+
+```bash Debug Build
+# For testing purposes
+flutter build appbundle --debug
+```
+
+```bash Profile Build
+# For performance testing
+flutter build appbundle --profile
+```
+
+```bash Release Build
+# For Play Store submission
+flutter build appbundle --release
+```
+
+```bash Split by ABI
+# Build for specific architectures
+flutter build appbundle --target-platform android-arm,android-arm64,android-x64
+```
+
+```bash Production Flavor
+# Build with specific flavor
+flutter build appbundle --flavor production
+```
+
+</CodeGroup>
+
+## 3. Testing the Build
+
+Follow these steps to test your build:
+
+```bash
+# Run tests before building
+flutter test
+
+# Install and test on connected device
+flutter install
+
+# Check the app bundle
+bundletool build-apks --bundle=build/app/outputs/bundle/release/app-release.aab \
+    --output=build/app/outputs/bundle/release/app-release.apks
+```
