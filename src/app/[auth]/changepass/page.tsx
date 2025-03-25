@@ -12,6 +12,8 @@ export default function ChangePasswordPage() {
     newPassword: '',
     confirmPassword: ''
   })
+
+  
   const [showPasswords, setShowPasswords] = useState({
     old: false,
     new: false,
