@@ -36,77 +36,89 @@ export default function LoginPage() {
 
       const emailSignInData = await emailSignInResponse.json();
       console.log("in next js apis", emailSignInData);
-      if (emailSignInData.response?.AuthenticationResult) {
-        console.log("in next js apis (inside)", emailSignInData);
-        const { IdToken, RefreshToken } =
-          emailSignInData.response.AuthenticationResult;
-        const requestId = emailSignInData.response.$metadata.requestId;
+      console.log("ChallengeName",emailSignInData.response.ChallengeName);
 
-        Cookies.set("id_token", IdToken, { expires: 1 });
-        Cookies.set("refresh_token", RefreshToken, {
-          expires: 7,
+      if (emailSignInData.response.ChallengeName === "MFA_SETUP") {
+        console.log("MFA setup required!");
+        Cookies.set("mfaSession", emailSignInData.response.Session, { expires: 1 });
+        Cookies.set("userId", emailSignInData.response.ChallengeParameters.USER_ID_FOR_SRP, { expires: 1 });
+        router.push("/auth/mfa-setup"); // Redirect to MFA setup page
+        return;
+    }
+
+
+      // if (emailSignInData.response?.AuthenticationResult) {
+      //   console.log("in next js apis (inside)", emailSignInData);
+      //   const { IdToken, RefreshToken } =
+      //     emailSignInData.response.AuthenticationResult;
+      //   const requestId = emailSignInData.response.$metadata.requestId;
+
+      //   Cookies.set("id_token", IdToken, { expires: 1 });
+      //   Cookies.set("refresh_token", RefreshToken, {
+      //     expires: 7,
           
-        });
-        Cookies.set("username", requestId, { expires: 1 });
-        console.log(IdToken, RefreshToken, requestId);
-      }
+      //   });
+      //   Cookies.set("username", requestId, { expires: 1 });
+      //   console.log(IdToken, RefreshToken, requestId);
+      // }
 
       // First API call - Login
       
-      const loginResponse = await fetch(
-        "http://localhost:4000/api/swasthi/admin/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      // const loginResponse = await fetch(
+      //   "http://localhost:4000/api/swasthi/admin/login",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ email, password }),
+      //   }
+      // );
 
-      const loginData = await loginResponse.json();
-      console.log("loginData",loginData);
-      if (!loginData.success) {
-        setError(loginData.message || "Login failed");
-        return;
-      }
+      // const loginData = await loginResponse.json();
+      // console.log("loginData",loginData);
+      // if (!loginData.success) {
+      //   setError(loginData.message || "Login failed");
+      //   return;
+      // }
 
-      // Store tempToken and userId in cookies
-      Cookies.set("tempToken", loginData.tempToken, {
-        expires: 1,
+      // // Store tempToken and userId in cookies
+      // Cookies.set("tempToken", loginData.tempToken, {
+      //   expires: 1,
        
-      });
-      Cookies.set("userId", loginData.userData._id, {
-        expires: 1,
+      // });
+      // Cookies.set("userId", loginData.userData._id, {
+      //   expires: 1,
         
-      });
+      // });
      
-      // Second API call - Check MFA setup, 
-      console.log("loginData",loginData);
-      console.log("loginData.userData._id",loginData.userData._id);
-      const mfaSetupResponse = await fetch(
-        "http://localhost:4000/api/swasthi/admin/setup-mfa",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        
-          body: JSON.stringify({ userId: loginData.userData._id }),
-        }
-      
-      );
+      // // Second API call - Check MFA setup, 
+      // console.log("loginData",loginData);
+      // console.log("loginData.userData._id",loginData.userData._id);
 
-      const mfaSetupData = await mfaSetupResponse.json();
+      // const mfaSetupResponse = await fetch(
+      //   "http://localhost:4000/api/swasthi/admin/setup-mfa",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+        
+      //     body: JSON.stringify({ userId: loginData.userData._id }),
+      //   }
+      
+      // );
+
+      // const mfaSetupData = await mfaSetupResponse.json();
 
       // Redirect based on MFA setup status
-      if (mfaSetupData.success) {
-        // Store QR code for MFA setup
-        localStorage.setItem("mfaQrCode", mfaSetupData.qrCode);
-        router.push("/auth/mfa-setup");
-      } else {
-        router.push("/auth/mfa-verify");
-      }
+      // if (mfaSetupData.success) {
+      //   // Store QR code for MFA setup
+      //   localStorage.setItem("mfaQrCode", mfaSetupData.qrCode);
+      //   router.push("/auth/mfa-setup");
+      // } else {
+      //   router.push("/auth/mfa-verify");
+      // }
     } catch (err) {
       console.error("Error during authentication:", err);
       setError("An error occurred during authentication");
